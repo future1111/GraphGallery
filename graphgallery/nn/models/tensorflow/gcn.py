@@ -3,7 +3,6 @@ from tensorflow.keras.layers import Dropout
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras import regularizers
 from tensorflow.keras.losses import SparseCategoricalCrossentropy
-from tensorflow.keras.metrics import SparseCategoricalAccuracy
 
 
 from graphgallery.nn.layers.tensorflow import GraphConvolution
@@ -38,7 +37,7 @@ class GCN(TFKeras):
 
         super().__init__(inputs=[x, adj], outputs=h)
         self.compile(loss=SparseCategoricalCrossentropy(from_logits=True),
-                     optimizer=Adam(lr=lr), metrics=[SparseCategoricalAccuracy(name='accuracy')],
+                     optimizer=Adam(lr=lr), metrics=['accuracy'],
                      experimental_run_tf_function=experimental_run_tf_function)
 
 # class GCN(Model):

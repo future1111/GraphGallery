@@ -14,30 +14,6 @@ def mask_or_gather(out, imask):
 
 class TFKeras(Model):
     """High-level encapsulation of Tensorflow Keras Model."""
-    @property
-    def metrics(self):
-        m = super().metrics
-        if not m:
-            return self.default_metrics
-        return m
-
-    @property
-    def metrics_names(self):
-        m = super().metrics_names
-
-        if not m:
-            return self.default_metrics_names
-        if m[0] != 'loss':
-            m = ['loss'] + m
-        return m
-
-    @property
-    def default_metrics(self):
-        return self.compiled_metrics._metrics
-
-    @property
-    def default_metrics_names(self):
-        return ['loss'] + [m.name for m in self.compiled_metrics._metrics]
 
     def train_on_batch(self,
                        x,
@@ -49,6 +25,10 @@ class TFKeras(Model):
                        reset_metrics=True,
                        return_dict=False):
         if not eager:
+            # FIXME: for Tensorflow 2.4.0, if causes an error:
+            # ValueError: Data cardinality is ambiguous.
+            # https://github.com/tensorflow/tensorflow/issues/42175
+            # this method does not work for Tensorflow>=2.4.0
             x = merge_as_list(x, imask)
             return super().train_on_batch(x=x,
                                           y=y,
@@ -56,25 +36,28 @@ class TFKeras(Model):
                                           class_weight=class_weight,
                                           reset_metrics=reset_metrics)
         else:
-            loss_fn = self.loss
+            # FIXME: self.metrics would return '[]' for tensorflow>=2.2.0
+            # See <https://github.com/tensorflow/tensorflow/issues/37990>
+            # the loss or metrics must be called to build the compiled_loss
+            # or compiled_metrics
+            loss_fn = self.compiled_loss
             optimizer = self.optimizer
+            metrics = self.compiled_metrics
 
             if reset_metrics:
                 self.reset_metrics()
-                for metric in self.metrics:
-                    metric.reset_states()
+                metrics.reset_states()
 
             with tf.GradientTape() as tape:
                 out = self(x, training=True)
                 out = mask_or_gather(out, imask)
                 loss = loss_fn(y, out)
-                for metric in self.metrics:
-                    metric.update_state(y, out)
+                metrics.update_state(y, out)
 
             grad = tape.gradient(loss, self.trainable_variables)
             optimizer.apply_gradients(zip(grad, self.trainable_variables))
 
-            results = [loss] + [metric.result() for metric in self.metrics]
+            results = [loss] + [metric.result() for metric in metrics.metrics]
             return dict(zip(self.metrics_names, results))
 
     def test_on_batch(self,
@@ -93,20 +76,18 @@ class TFKeras(Model):
                                          class_weight=class_weight,
                                          reset_metrics=reset_metrics)
         else:
-            loss_fn = self.loss
+            loss_fn = self.compiled_loss
             optimizer = self.optimizer
+            metrics = self.compiled_metrics
 
             if reset_metrics:
                 self.reset_metrics()
-                for metric in self.metrics:
-                    metric.reset_states()
+                metrics.reset_states()
 
             out = self(x, training=False)
             out = mask_or_gather(out, imask)
             loss = loss_fn(y, out)
-            for metric in self.metrics:
-                metric.update_state(y, out)
+            metrics.update_state(y, out)
 
-            results = [loss] + [metric.result() for metric in self.metrics]
-
+            results = [loss] + [metric.result() for metric in metrics.metrics]
             return dict(zip(self.metrics_names, results))

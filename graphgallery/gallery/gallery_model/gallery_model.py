@@ -225,12 +225,6 @@ class GalleryModel(GraphModel):
                 'You must compile your model before training/testing/predicting. Use `model.build()`.'
             )
 
-        metrics_names = getattr(model, "metrics_names", None)
-        # FIXME: This would return '[]' for tensorflow>=2.2.0
-        # See <https://github.com/tensorflow/tensorflow/issues/37990>
-        if not metrics_names:
-            raise RuntimeError(f"Please specify the attribute or property 'metrics_names' for the model.")
-            
         if not isinstance(train_data, Sequence):
             train_data = self.train_sequence(train_data)
 
@@ -242,7 +236,6 @@ class GalleryModel(GraphModel):
             if not isinstance(val_data, Sequence):
                 val_data = self.test_sequence(val_data)
             self.val_data = val_data
-            metrics_names = metrics_names + ["val_" + metric for metric in metrics_names]
 
         if not isinstance(callbacks, callbacks_module.CallbackList):
             callbacks = callbacks_module.CallbackList(callbacks)
@@ -267,11 +260,6 @@ class GalleryModel(GraphModel):
 
             if not ckpt_path.endswith(gg.file_ext()):
                 ckpt_path = ckpt_path + gg.file_ext()
-
-            if monitor not in metrics_names:
-                monitor = metrics_names[-1]
-                warnings.warn(f"'{monitor}' are not included in the metrics names. default to '{monitor}'.",
-                              UserWarning)
 
             mc_callback = ModelCheckpoint(ckpt_path,
                                           monitor=monitor,
@@ -372,6 +360,7 @@ class GalleryModel(GraphModel):
                           width=20,
                           verbose=verbose)
         logs = BunchDict(**self.test_step(test_data))
+        logs.update({k: v.numpy().item() for k, v in logs.items()})
         progbar.update(len(test_data), logs.items())
         return logs
 
