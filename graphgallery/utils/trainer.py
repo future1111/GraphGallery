@@ -12,12 +12,13 @@ def train_step_tf(model, sequence, device):
     # this should be fixed using ``GradientTape`` and ``apply_gradients``
     # for training.
     with tf.device(device):
-        for inputs, labels in sequence:
+        for inputs, imask, labels in sequence:
             results = model.train_on_batch(x=inputs,
+                                           imask=imask,
                                            y=labels,
                                            reset_metrics=False)
 
-    return dict(zip(model.metrics_names, results))
+    return results
 
 
 # def train_step_tf(model, sequence, device):
@@ -69,12 +70,13 @@ def test_step_tf(model, sequence, device):
     model.reset_metrics()
 
     with tf.device(device):
-        for inputs, labels in sequence:
+        for inputs, imask, labels in sequence:
             results = model.test_on_batch(x=inputs,
+                                          imask=imask,
                                           y=labels,
                                           reset_metrics=False)
 
-    return dict(zip(model.metrics_names, results))
+    return results
 
 
 # def test_step_tf(model, sequence, device):

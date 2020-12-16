@@ -103,6 +103,8 @@ class GCN(GalleryModel):
     def train_sequence(self, index):
 
         labels = self.graph.node_label[index]
-        sequence = FullBatchSequence([self.cache.X, self.cache.A, index],
-                                     labels, device=self.device)
+        sequence = FullBatchSequence(x=[self.cache.X, self.cache.A],
+                                     y=labels, 
+                                     imask=index,
+                                     device=self.device)
         return sequence

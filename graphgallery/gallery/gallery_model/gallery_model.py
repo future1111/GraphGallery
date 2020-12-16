@@ -228,9 +228,9 @@ class GalleryModel(GraphModel):
         metrics_names = getattr(model, "metrics_names", None)
         # FIXME: This would return '[]' for tensorflow>=2.2.0
         # See <https://github.com/tensorflow/tensorflow/issues/37990>
-        # metrics_names = ['loss', 'accuracy']
         if not metrics_names:
-            raise RuntimeError(f"Please specify the attribute 'metrics_names' for the model.")
+            raise RuntimeError(f"Please specify the attribute or property 'metrics_names' for the model.")
+            
         if not isinstance(train_data, Sequence):
             train_data = self.train_sequence(train_data)
 
@@ -303,7 +303,6 @@ class GalleryModel(GraphModel):
                 callbacks.on_train_batch_begin(0)
                 train_logs = self.train_step(train_data)
                 train_data.on_epoch_end()
-
                 logs.update(train_logs)
 
                 if validation:
@@ -368,8 +367,6 @@ class GalleryModel(GraphModel):
 
         if verbose:
             print("Testing...")
-
-        metrics_names = self.model.metrics_names
 
         progbar = Progbar(target=len(test_data),
                           width=20,
