@@ -15,6 +15,7 @@ def mask_or_gather(out, imask):
 class TFKeras(Model):
     """High-level encapsulation of Tensorflow Keras Model."""
 
+    @tf.function
     def train_on_batch(self,
                        x,
                        imask=None,
@@ -40,24 +41,24 @@ class TFKeras(Model):
             # See <https://github.com/tensorflow/tensorflow/issues/37990>
             # the loss or metrics must be called to build the compiled_loss
             # or compiled_metrics
-            loss_fn = self.compiled_loss
+            loss_fn = self.loss
             optimizer = self.optimizer
-            metrics = self.compiled_metrics
-
-            if reset_metrics:
-                self.reset_metrics()
-                metrics.reset_states()
+            metrics = self.metrics
 
             with tf.GradientTape() as tape:
                 out = self(x, training=True)
                 out = mask_or_gather(out, imask)
                 loss = loss_fn(y, out)
-                metrics.update_state(y, out)
+                if isinstance(metrics, list):
+                    for metric in metrics:
+                        metric.update_state(y, out)
+                else:
+                    metrics.update_state(y, out)
 
             grad = tape.gradient(loss, self.trainable_variables)
             optimizer.apply_gradients(zip(grad, self.trainable_variables))
 
-            results = [loss] + [metric.result() for metric in metrics.metrics]
+            results = [loss] + [metric.result() for metric in metrics]
             return dict(zip(self.metrics_names, results))
 
     def test_on_batch(self,
@@ -76,18 +77,19 @@ class TFKeras(Model):
                                          class_weight=class_weight,
                                          reset_metrics=reset_metrics)
         else:
-            loss_fn = self.compiled_loss
+            loss_fn = self.loss
             optimizer = self.optimizer
-            metrics = self.compiled_metrics
-
-            if reset_metrics:
-                self.reset_metrics()
-                metrics.reset_states()
+            metrics = self.metrics
 
             out = self(x, training=False)
             out = mask_or_gather(out, imask)
             loss = loss_fn(y, out)
-            metrics.update_state(y, out)
+            if isinstance(metrics, list):
+                for metric in metrics:
+                    metric.update_state(y, out)
+            else:
+                metrics.update_state(y, out)
 
-            results = [loss] + [metric.result() for metric in metrics.metrics]
+
+            results = [loss] + [metric.result() for metric in metrics]
             return dict(zip(self.metrics_names, results))
