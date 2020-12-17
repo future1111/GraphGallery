@@ -4,8 +4,8 @@ from tensorflow.keras.optimizers import Adam
 from tensorflow.keras import regularizers
 from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
-from graphgallery import floatx, intx
 from graphgallery.nn.models import TFKeras
+from graphgallery import floatx
 
 
 class SGC(TFKeras):

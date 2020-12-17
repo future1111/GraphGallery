@@ -127,10 +127,9 @@ class FastGCN(GalleryModel):
         labels = self.graph.node_label[index]
         A = self.cache.A[index]
 
-        sequence = FastGCNBatchSequence(
-            [self.cache.X, A],
-            labels,
-            batch_size=None,
-            rank=None,
-            device=self.device)  # use full batch
+        sequence = FastGCNBatchSequence([self.cache.X, A],
+                                        labels,
+                                        batch_size=None,
+                                        rank=None,
+                                        device=self.device)  # use full batch
         return sequence

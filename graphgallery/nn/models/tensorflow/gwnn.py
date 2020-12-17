@@ -4,7 +4,7 @@ from tensorflow.keras.optimizers import Adam
 from tensorflow.keras import regularizers
 from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
-from graphgallery.nn.layers.tensorflow import WaveletConvolution, Gather
+from graphgallery.nn.layers.tensorflow import WaveletConvolution
 from graphgallery import floatx, intx
 from graphgallery.nn.models import TFKeras
 
@@ -25,8 +25,6 @@ class GWNN(TFKeras):
         inverse_wavelet = Input(batch_shape=[num_nodes, num_nodes],
                                 dtype=_floatx, sparse=True,
                                 name='inverse_wavelet_matrix')
-        index = Input(batch_shape=[None],
-                      dtype=intx(), name='node_index')
 
         h = x
         for hidden, activation in zip(hiddens, activations):
@@ -36,8 +34,7 @@ class GWNN(TFKeras):
 
         h = WaveletConvolution(out_channels, use_bias=use_bias)(
             [h, wavelet, inverse_wavelet])
-        h = Gather()([h, index])
 
-        super().__init__(inputs=[x, wavelet, inverse_wavelet, index], outputs=h)
+        super().__init__(inputs=[x, wavelet, inverse_wavelet], outputs=h)
         self.compile(loss=SparseCategoricalCrossentropy(from_logits=True),
                      optimizer=Adam(lr=lr), metrics=['accuracy'])

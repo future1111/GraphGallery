@@ -243,8 +243,8 @@ class GMNN(GalleryModel):
 
         # if the graph is changed?
         labels = self.cache.label_onehot[index]
-        sequence = FullBatchSequence(
-            [self.cache.X, self.cache.A, index],
-            labels,
-            device=self.device)
+        sequence = FullBatchSequence([self.cache.X, self.cache.A],
+                                     labels,
+                                     sample_weight=index,
+                                     device=self.device)
         return sequence

@@ -79,19 +79,19 @@ class MedianGCN(GalleryModel):
               use_bias=False):
 
         self.model = pyMedianGCN(self.graph.num_node_attrs,
-                           self.graph.num_node_classes,
-                           hiddens=hiddens,
-                           activations=activations,
-                           dropout=dropout,
-                           weight_decay=weight_decay,
-                           lr=lr,
-                           use_bias=use_bias).to(self.device)
+                                 self.graph.num_node_classes,
+                                 hiddens=hiddens,
+                                 activations=activations,
+                                 dropout=dropout,
+                                 weight_decay=weight_decay,
+                                 lr=lr,
+                                 use_bias=use_bias).to(self.device)
 
     def train_sequence(self, index):
 
         labels = self.graph.node_label[index]
-        sequence = FullBatchSequence(
-            [self.cache.X, self.cache.A, index],
-            labels,
-            device=self.device)
+        sequence = FullBatchSequence([self.cache.X, self.cache.A],
+                                     labels,
+                                     sample_weight=index,
+                                     device=self.device)
         return sequence

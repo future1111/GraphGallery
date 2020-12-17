@@ -5,7 +5,7 @@ from tensorflow.keras.optimizers import Adam
 from tensorflow.keras import regularizers
 from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
-from graphgallery.nn.layers.tensorflow import GaussionConvolution_F, GaussionConvolution_D, Sample, Gather
+from graphgallery.nn.layers.tensorflow import GaussionConvolution_F, GaussionConvolution_D, Sample
 from graphgallery import floatx, intx
 from graphgallery.nn.models import TFKeras
 
@@ -27,7 +27,6 @@ class RobustGCN(TFKeras):
                      sparse=True, name='adj_matrix_1'),
                Input(batch_shape=[None, None], dtype=_floatx, sparse=True,
                      name='adj_matrix_2')]
-        index = Input(batch_shape=[None], dtype=intx(), name='node_index')
 
         h = x
         if hiddens:
@@ -56,9 +55,8 @@ class RobustGCN(TFKeras):
             out_channels, gamma=gamma, use_bias=use_bias)([mean, var, *adj])
 
         h = Sample()([mean, var])
-        h = Gather()([h, index])
 
-        super().__init__(inputs=[x, *adj, index], outputs=h)
+        super().__init__(inputs=[x, *adj], outputs=h)
         self.compile(loss=SparseCategoricalCrossentropy(from_logits=True),
                      optimizer=Adam(lr=lr), metrics=['accuracy'])
 

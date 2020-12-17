@@ -56,11 +56,10 @@ class GAT(TorchKeras):
                      optimizer=optim.Adam(paras, lr=lr),
                      metrics=[Accuracy()])
 
-    def forward(self, inputs):
-        x, adj, idx = inputs
+    def forward(self, x, adj):
 
         for layer in self.layers:
             x = self.dropout(x)
-            x = layer([x, adj])
+            x = layer(x, adj)
 
-        return x[idx]
+        return x

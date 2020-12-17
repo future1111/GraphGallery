@@ -76,3 +76,12 @@ class TFKeras(Model):
             out = self(x, training=False)
             out = mask_or_gather(out, sample_weight)
         return out
+
+    @property
+    def custom_objects(self):
+        return self._custom_objects
+
+    @custom_objects.setter
+    def custom_objects(self, objs):
+        assert isinstance(objs, dict), objs
+        self._custom_objects = objs

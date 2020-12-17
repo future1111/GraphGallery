@@ -138,15 +138,6 @@ class GraphModel(Model):
         # TODO assert m is None or isinstance(m, tf.keras.Model) or torch.nn.Module
         self._model = m
 
-    @property
-    def custom_objects(self):
-        return self._custom_objects
-
-    @custom_objects.setter
-    def custom_objects(self, objs):
-        assert isinstance(objs, dict), objs
-        self._custom_objects = objs
-
     def close(self):
         """Close the session of model and empty cache."""
         gg.empty_cache()

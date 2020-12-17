@@ -4,7 +4,7 @@ from tensorflow.keras.optimizers import Adam
 from tensorflow.keras import regularizers
 from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
-from graphgallery.nn.layers.tensorflow import GraphAttention, Gather
+from graphgallery.nn.layers.tensorflow import GraphAttention
 from graphgallery import floatx, intx
 from graphgallery.nn.models import TFKeras
 
@@ -21,7 +21,6 @@ class GAT(TFKeras):
                   dtype=floatx(), name='node_attr')
         adj = Input(batch_shape=[None, None], dtype=floatx(),
                     sparse=True, name='adj_matrix')
-        index = Input(batch_shape=[None], dtype=intx(), name='node_index')
 
         h = x
         for hidden, n_head, activation in zip(hiddens, n_heads, activations):
@@ -37,9 +36,8 @@ class GAT(TFKeras):
 
         h = GraphAttention(out_channels, use_bias=use_bias,
                            attn_heads=1, reduction='average')([h, adj])
-        h = Gather()([h, index])
 
-        super().__init__(inputs=[x, adj, index], outputs=h)
+        super().__init__(inputs=[x, adj], outputs=h)
         self.compile(loss=SparseCategoricalCrossentropy(from_logits=True),
                      optimizer=Adam(lr=lr), metrics=['accuracy'])
       # TODO

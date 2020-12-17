@@ -77,7 +77,7 @@ class SGC(GalleryModel):
 
         X, A = gf.astensors(node_attr, adj_matrix, device=self.device)
 
-        X = SGConvolution(order=self.cache.order)([X, A])
+        X = SGConvolution(order=self.cache.order)(X, A)
         # ``A`` and ``X`` are cached for later use
         self.register_cache("X", X)
         self.register_cache("A", A)

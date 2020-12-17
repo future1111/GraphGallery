@@ -4,9 +4,9 @@ from tensorflow.keras.optimizers import Adam
 from tensorflow.keras import regularizers
 from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
-from graphgallery.nn.layers.tensorflow import DenseConvolution, Gather
-from graphgallery import floatx, intx
+from graphgallery.nn.layers.tensorflow import DenseConvolution
 from graphgallery.nn.models import TFKeras
+from graphgallery import floatx
 
 
 class DenseGCN(TFKeras):
@@ -22,7 +22,6 @@ class DenseGCN(TFKeras):
                   dtype=floatx(), name='node_attr')
         adj = Input(batch_shape=[None, None], dtype=floatx(),
                     sparse=False, name='adj_matrix')
-        index = Input(batch_shape=[None], dtype=intx(), name='node_index')
 
         h = x
         for hidden, activation in zip(hiddens, activations):
@@ -33,8 +32,7 @@ class DenseGCN(TFKeras):
             h = Dropout(rate=dropout)(h)
 
         h = DenseConvolution(out_channels, use_bias=use_bias)([h, adj])
-        h = Gather()([h, index])
 
-        super().__init__(inputs=[x, adj, index], outputs=h)
+        super().__init__(inputs=[x, adj], outputs=h)
         self.compile(loss=SparseCategoricalCrossentropy(from_logits=True),
                      optimizer=Adam(lr=lr), metrics=['accuracy'])

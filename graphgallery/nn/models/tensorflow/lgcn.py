@@ -4,7 +4,7 @@ from tensorflow.keras.optimizers import Nadam
 from tensorflow.keras import regularizers
 from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
-from graphgallery.nn.layers.tensorflow import Top_k_features, LGConvolution, DenseConvolution, Mask
+from graphgallery.nn.layers.tensorflow import Top_k_features, LGConvolution, DenseConvolution
 from graphgallery import floatx, intx
 from graphgallery.nn.models import TFKeras
 
@@ -21,7 +21,6 @@ class LGCN(TFKeras):
                   dtype=floatx(), name='node_attr')
         adj = Input(batch_shape=[None, None], dtype=floatx(),
                     sparse=False, name='adj_matrix')
-        mask = Input(batch_shape=[None], dtype='bool', name='node_mask')
 
         h = x
         for idx, hidden in enumerate(hiddens):
@@ -48,8 +47,6 @@ class LGCN(TFKeras):
                              activation=activations[-1],
                              kernel_regularizer=regularizers.l2(weight_decay))([h, adj])
 
-        h = Mask()([h, mask])
-
-        super().__init__(inputs=[x, adj, mask], outputs=h)
+        super().__init__(inputs=[x, adj], outputs=h)
         self.compile(loss=SparseCategoricalCrossentropy(from_logits=True),
                      optimizer=Nadam(lr=lr), metrics=['accuracy'])

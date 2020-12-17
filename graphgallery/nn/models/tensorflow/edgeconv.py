@@ -5,8 +5,8 @@ from tensorflow.keras import regularizers
 from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
 from graphgallery.nn.layers.tensorflow import GraphEdgeConvolution, Gather
-from graphgallery import floatx, intx
 from graphgallery.nn.models import TFKeras
+from graphgallery import floatx
 
 
 class EdgeGCN(TFKeras):
@@ -23,8 +23,6 @@ class EdgeGCN(TFKeras):
                            name='edge_index')
         edge_weight = Input(batch_shape=[None], dtype=_floatx,
                             name='edge_weight')
-        index = Input(batch_shape=[None],
-                      dtype=_intx, name='node_index')
 
         h = x
         for hidden, activation in zip(hiddens, activations):
@@ -36,8 +34,7 @@ class EdgeGCN(TFKeras):
 
         h = GraphEdgeConvolution(out_channels, use_bias=use_bias)(
             [h, edge_index, edge_weight])
-        output = Gather()([h, index])
 
-        super().__init__(inputs=[x, edge_index, edge_weight, index], outputs=output)
+        super().__init__(inputs=[x, edge_index, edge_weight], outputs=h)
         self.compile(loss=SparseCategoricalCrossentropy(from_logits=True),
                      optimizer=Adam(lr=lr), metrics=['accuracy'])

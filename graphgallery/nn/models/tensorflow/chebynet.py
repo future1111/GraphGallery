@@ -4,9 +4,9 @@ from tensorflow.keras.optimizers import Adam
 from tensorflow.keras import regularizers
 from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
-from graphgallery.nn.layers.tensorflow import ChebyConvolution, Gather
-from graphgallery import floatx, intx
+from graphgallery.nn.layers.tensorflow import ChebyConvolution
 from graphgallery.nn.models import TFKeras
+from graphgallery import floatx
 
 
 class ChebyNet(TFKeras):
@@ -23,7 +23,6 @@ class ChebyNet(TFKeras):
         adj = [Input(batch_shape=[None, None],
                      dtype=floatx(), sparse=True,
                      name=f'adj_matrix_{i}') for i in range(order + 1)]
-        index = Input(batch_shape=[None], dtype=intx(), name='node_index')
 
         h = x
         for hidden, activation in zip(hiddens, activations):
@@ -34,8 +33,7 @@ class ChebyNet(TFKeras):
 
         h = ChebyConvolution(out_channels,
                              order=order, use_bias=use_bias)([h, adj])
-        h = Gather()([h, index])
 
-        super().__init__(inputs=[x, *adj, index], outputs=h)
+        super().__init__(inputs=[x, *adj], outputs=h)
         self.compile(loss=SparseCategoricalCrossentropy(from_logits=True),
                      optimizer=Adam(lr=lr), metrics=['accuracy'])

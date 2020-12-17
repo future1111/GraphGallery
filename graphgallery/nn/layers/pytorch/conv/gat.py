@@ -199,8 +199,7 @@ class SparseGraphAttention(Module):
             if self.use_bias:
                 zeros(self.biases[head])
 
-    def forward(self, inputs):
-        x, adj = inputs
+    def forward(self, x, adj):
 
         dv = x.device
         N = x.size()[0]
