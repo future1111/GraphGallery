@@ -14,7 +14,7 @@
     <img src="https://img.shields.io/badge/TensorFlow->=2.1.0-FF6F00?logo=tensorflow" alt="tensorflow">
   </a>      
   <a href="https://github.com/pytorch/pytorch">
-    <img src="https://img.shields.io/badge/PyTorch->=1.5-FF6F00?logo=pytorch" alt="pytorch">
+    <img src="https://img.shields.io/badge/PyTorch->=1.4-FF6F00?logo=pytorch" alt="pytorch">
   </a>   
   <a href="https://pypi.org/project/graphgallery/">
     <img src="https://badge.fury.io/py/graphgallery.svg" alt="pypi">
@@ -74,7 +74,7 @@ pip install -U graphgallery
 GraphGallery has been tested on:
 + CUDA 10.1
 + TensorFlow 2.1~2.3, 2.4 is unavailable now and 2.1.2 is recommended.
-+ PyTorch 1.5~1.7
++ PyTorch 1.4~1.7
 + Pytorch Geometric (PyG) 1.6.1
 + DGL 0.5.2, 0.5.3
 

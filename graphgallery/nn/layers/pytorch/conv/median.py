@@ -1,12 +1,11 @@
 import torch
-from torch.nn.parameter import Parameter
-from torch.nn import Module
+import torch.nn as nn
 
 from graphgallery.nn.init.pytorch import uniform, zeros
 from ..get_activation import get_activation
 
 
-class MedianConvolution(Module):
+class MedianConvolution(nn.Module):
     def __init__(self,
                  in_channels,
                  out_channels,
@@ -16,21 +15,13 @@ class MedianConvolution(Module):
         self.in_channels = in_channels
         self.out_channels = out_channels
         self.activation = get_activation(activation)
-        self.kernel = Parameter(torch.Tensor(in_channels, out_channels))
-
-        if use_bias:
-            self.bias = Parameter(torch.Tensor(out_channels))
-        else:
-            self.register_parameter('bias', None)
-
-        self.reset_parameters()
+        self.w = nn.Linear(in_channels, out_channels, bias=use_bias)
 
     def reset_parameters(self):
-        uniform(self.kernel)
-        zeros(self.bias)
+        self.w.reset_parameters()
 
     def forward(self, x, nbrs):
-        h = torch.mm(x, self.kernel)
+        h = self.w(x)
         aggregation = []
         for node, nbr in enumerate(nbrs):
             message, _ = torch.median(h[nbr], 0)

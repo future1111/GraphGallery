@@ -60,8 +60,7 @@ class GAT(TorchKeras):
                      optimizer=optim.Adam(paras, lr=lr),
                      metrics=[Accuracy()])
 
-    def forward(self, inputs):
-        x, edge_index, edge_weight, idx = inputs
+    def forward(self, x, edge_index, edge_weight=None):
         x = self.dropout(x)
 
         for layer, act in zip(self.layers, self.acts):
@@ -69,4 +68,4 @@ class GAT(TorchKeras):
             x = self.dropout(x)
 
         x = self.layers[-1](x, edge_index)
-        return x[idx]
+        return x
