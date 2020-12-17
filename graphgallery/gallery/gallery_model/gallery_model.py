@@ -21,7 +21,6 @@ from graphgallery.nn.functions import softmax
 from graphgallery.data.io import makedirs_from_filepath
 from graphgallery.data import BaseGraph
 from graphgallery.utils.raise_error import raise_if_kwargs
-from graphgallery.utils import trainer
 from graphgallery.gallery import GraphModel
 
 # Ignora warnings:
@@ -52,18 +51,6 @@ class GalleryModel(GraphModel):
             ``label_transform``, ``graph_transform``, etc.
         """
         super().__init__(graph, device=device, seed=seed, name=name, **kwargs)
-
-        if self.backend == "tensorflow":
-            self.train_step_fn = partial(trainer.train_step_tf,
-                                         device=self.device)
-            self.test_step_fn = partial(trainer.test_step_tf,
-                                        device=self.device)
-            self.predict_step_fn = partial(trainer.predict_step_tf,
-                                           device=self.device)
-        else:
-            self.train_step_fn = trainer.train_step_torch
-            self.test_step_fn = trainer.test_step_torch
-            self.predict_step_fn = trainer.predict_step_torch
 
     def process(self, graph=None, **kwargs):
         """pre-process for the input graph, including manipulations
@@ -390,7 +377,15 @@ class GalleryModel(GraphModel):
             Output accuracy of prediction.
 
         """
-        return self.train_step_fn(self.model, sequence)
+        model = self.model
+        model.reset_metrics()
+
+        for inputs, labels, sample_weight in sequence:
+            results = model.train_step_on_batch(x=inputs,
+                                                y=labels,
+                                                sample_weight=sample_weight,
+                                                device=sequence.device)
+        return results
 
     def test_step(self, sequence):
         """
@@ -417,7 +412,15 @@ class GalleryModel(GraphModel):
             Output accuracy of prediction.
 
         """
-        return self.test_step_fn(self.model, sequence)
+        model = self.model
+        model.reset_metrics()
+
+        for inputs, labels, sample_weight in sequence:
+            results = model.test_step_on_batch(x=inputs,
+                                               y=labels,
+                                               sample_weight=sample_weight,
+                                               device=sequence.device)
+        return results
 
     def predict(self, predict_data=None, return_prob=True):
         """
@@ -450,10 +453,7 @@ class GalleryModel(GraphModel):
                 'You must compile your model before training/testing/predicting. Use `model.build()`.'
             )
 
-        if predict_data is None:
-            predict_data = np.arange(self.graph.num_nodes, dtype=gg.intx())
-
-        if not isinstance(predict_data, Sequence):
+        if predict_data is not None and not isinstance(predict_data, Sequence):
             predict_data = self.predict_sequence(predict_data)
 
         self.predict_data = predict_data
@@ -464,7 +464,15 @@ class GalleryModel(GraphModel):
         return logit
 
     def predict_step(self, sequence):
-        return self.predict_step_fn(self.model, sequence)
+        logits = []
+        model = self.model
+        for inputs, labels, sample_weight in sequence:
+            logit = model.predict_step_on_batch(x=inputs, 
+                                                sample_weight=sample_weight, 
+                                                device=self.device)
+            logits.append(logit)
+
+        return np.vstack(logits)
 
     def train_sequence(self, inputs):
         """
@@ -536,16 +544,16 @@ class GalleryModel(GraphModel):
         if osp.exists(filepath):
             os.remove(filepath)
 
-    def __getattr__(self, attr):
-        ##### FIXME: This may cause ERROR ######
-        try:
-            return self.__dict__[attr]
-        except KeyError:
-            if hasattr(self, "_model") and hasattr(self._model, attr):
-                return getattr(self._model, attr)
-            raise AttributeError(
-                f"'{self.name}' and '{self.name}.model' objects have no attribute '{attr}'"
-            )
+#     def __getattr__(self, attr):
+#         ##### FIXME: This may cause ERROR ######
+#         try:
+#             return self.__dict__[attr]
+#         except KeyError:
+#             if hasattr(self, "_model") and hasattr(self._model, attr):
+#                 return getattr(self._model, attr)
+#             raise AttributeError(
+#                 f"'{self.name}' and '{self.name}.model' objects have no attribute '{attr}'"
+#             )
 
 
 def remove_extra_tf_files(filepath):

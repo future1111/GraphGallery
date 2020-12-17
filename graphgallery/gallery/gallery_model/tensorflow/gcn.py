@@ -86,7 +86,7 @@ class GCN(GalleryModel):
               dropout=0.5,
               weight_decay=5e-4,
               lr=0.01,
-              use_bias=True):
+              use_bias=False):
 
         with tf.device(self.device):
             self.model = tfGCN(self.graph.num_node_attrs,
@@ -102,7 +102,7 @@ class GCN(GalleryModel):
 
         labels = self.graph.node_label[index]
         sequence = FullBatchSequence(x=[self.cache.X, self.cache.A],
-                                     y=labels, 
-                                     imask=index,
+                                     y=labels,
+                                     sample_weight=index,
                                      device=self.device)
         return sequence

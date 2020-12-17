@@ -45,11 +45,10 @@ class GCN(TorchKeras):
                      metrics=[Accuracy()])
         self.dropout = Dropout(dropout)
 
-    def forward(self, inputs):
-        x, neighbors, idx = inputs
+    def forward(self, x, adj):
 
         for layer in self.layers:
             x = self.dropout(x)
-            x = layer([x, neighbors])
+            x = layer(x, adj)
 
-        return x[idx]
+        return x

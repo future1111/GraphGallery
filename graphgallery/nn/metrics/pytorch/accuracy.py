@@ -17,9 +17,11 @@ class Accuracy(Metric):
         return self.update_state(y_true, y_pred,
                                  sample_weight=sample_weight)
 
+    @torch.no_grad()
     def update_state(self, y_true, y_pred,
                      sample_weight=None):
         if sample_weight is not None:
+            # TODO
             raise NotImplementedError("sample_weight")
         if y_pred.ndim == 2:
             y_pred = y_pred.argmax(1)

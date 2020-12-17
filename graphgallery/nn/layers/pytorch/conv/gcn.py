@@ -29,8 +29,7 @@ class GraphConvolution(Module):
         uniform(self.kernel)
         zeros(self.bias)
 
-    def forward(self, inputs):
-        x, adj = inputs
+    def forward(self, x, adj):
         h = torch.mm(x, self.kernel)
         output = torch.spmm(adj, h)
 
