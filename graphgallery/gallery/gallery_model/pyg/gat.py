@@ -97,7 +97,8 @@ class GAT(GalleryModel):
     def train_sequence(self, index):
 
         labels = self.graph.node_label[index]
-
-
-sample_weight
-return sequence
+        sequence = FullBatchSequence([self.cache.X, *self.cache.E],
+                                     labels,
+                                     sample_weight=index,
+                                     device=self.device)
+        return sequence
