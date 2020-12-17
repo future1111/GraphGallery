@@ -1,50 +1,37 @@
 import tensorflow as tf
 from tensorflow.keras import Model
 from graphgallery.utils import merge_as_list
+from graphgallery import functional as gf
+from graphgallery.functional.tensor.tensorflow import mask_or_gather
 
+from distutils.version import LooseVersion
 
-def mask_or_gather(out, imask):
-    if imask is not None:
-        if imask.dtype.is_bool:
-            return tf.boolean_mask(out, imask)
-        else:
-            return tf.gather(out, imask)
-    return out
+if LooseVersion(tf.__version__) >= LooseVersion("2.2.0"):
+    METRICS = "compiled_metrics"
+    LOSS = "compiled_loss"
+else:
+    METRICS = "metrics"
+    LOSS = "loss"
 
 
 class TFKeras(Model):
     """High-level encapsulation of Tensorflow Keras Model."""
 
     @tf.function
-    def train_on_batch(self,
-                       x,
-                       imask=None,
-                       y=None,
-                       eager=True,
-                       sample_weight=None,
-                       class_weight=None,
-                       reset_metrics=True,
-                       return_dict=False):
-        if not eager:
-            # FIXME: for Tensorflow 2.4.0, if causes an error:
-            # ValueError: Data cardinality is ambiguous.
-            # https://github.com/tensorflow/tensorflow/issues/42175
-            # this method does not work for Tensorflow>=2.4.0
-            x = merge_as_list(x, imask)
-            return super().train_on_batch(x=x,
-                                          y=y,
-                                          sample_weight=sample_weight,
-                                          class_weight=class_weight,
-                                          reset_metrics=reset_metrics)
-        else:
-            # FIXME: self.metrics would return '[]' for tensorflow>=2.2.0
-            # See <https://github.com/tensorflow/tensorflow/issues/37990>
-            # the loss or metrics must be called to build the compiled_loss
-            # or compiled_metrics
-            loss_fn = self.loss
-            optimizer = self.optimizer
-            metrics = self.metrics
+    def train_step_on_batch(self,
+                            x,
+                            imask=None,
+                            y=None,
+                            device="CPU"):
+        # FIXME: self.metrics would return '[]' for tensorflow>=2.2.0
+        # See <https://github.com/tensorflow/tensorflow/issues/37990>
+        # the loss or metrics must be called to build the compiled_loss
+        # or compiled_metrics
+        loss_fn = getattr(self, LOSS)
+        metrics = getattr(self, METRICS)
+        optimizer = self.optimizer
 
+        with tf.device(device):
             with tf.GradientTape() as tape:
                 out = self(x, training=True)
                 out = mask_or_gather(out, imask)
@@ -58,29 +45,19 @@ class TFKeras(Model):
             grad = tape.gradient(loss, self.trainable_variables)
             optimizer.apply_gradients(zip(grad, self.trainable_variables))
 
-            results = [loss] + [metric.result() for metric in metrics]
+            results = [loss] + [metric.result() for metric in getattr(metrics, "metrics", metrics)]
             return dict(zip(self.metrics_names, results))
-
-    def test_on_batch(self,
-                      x,
-                      imask=None,
-                      y=None,
-                      eager=True,
-                      sample_weight=None,
-                      reset_metrics=True,
-                      return_dict=False):
-        if not eager:
-            x = merge_as_list(x, imask)
-            return super().test_on_batch(x=x,
-                                         y=y,
-                                         sample_weight=sample_weight,
-                                         class_weight=class_weight,
-                                         reset_metrics=reset_metrics)
-        else:
-            loss_fn = self.loss
-            optimizer = self.optimizer
-            metrics = self.metrics
-
+        
+    @tf.function
+    def test_step_on_batch(self,
+                           x,
+                           imask=None,
+                           y=None,
+                           device="CPU"):
+        loss_fn = getattr(self, LOSS)
+        metrics = getattr(self, METRICS)
+        
+        with tf.device(device):
             out = self(x, training=False)
             out = mask_or_gather(out, imask)
             loss = loss_fn(y, out)
@@ -91,5 +68,6 @@ class TFKeras(Model):
                 metrics.update_state(y, out)
 
 
-            results = [loss] + [metric.result() for metric in metrics]
+            results = [loss] + [metric.result() for metric in getattr(metrics, "metrics", metrics)]
             return dict(zip(self.metrics_names, results))
+    

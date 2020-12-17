@@ -165,3 +165,4 @@ def normalize_edge_tensor(edge_index,
                                         num_nodes=num_nodes,
                                         fill_weight=fill_weight,
                                         rate=rate)
+

@@ -11,35 +11,13 @@ def train_step_tf(model, sequence, device):
     # https://github.com/tensorflow/tensorflow/issues/42175
     # this should be fixed using ``GradientTape`` and ``apply_gradients``
     # for training.
-    with tf.device(device):
-        for inputs, imask, labels in sequence:
-            results = model.train_on_batch(x=inputs,
-                                           imask=imask,
-                                           y=labels,
-                                           reset_metrics=False)
+    for inputs, imask, labels in sequence:
+        results = model.train_step_on_batch(x=inputs,
+                                            imask=imask,
+                                            y=labels,
+                                            device=sequencedevice)
 
     return results
-
-
-# def train_step_tf(model, sequence, device):
-#     model.reset_metrics()
-#     loss_fn = model.loss
-#     metric = model.metrics[0]
-#     optimizer = model.optimizer
-#     model.reset_metrics()
-#     metric.reset_states()
-
-#     loss = 0.
-#     with tf.GradientTape() as tape:
-#         for inputs, labels in sequence:
-#             output = model(inputs, training=True)
-#             loss += loss_fn(labels, output)
-#             metric.update_state(labels, output)
-
-#     grad = tape.gradient(loss, model.trainable_variables)
-#     optimizer.apply_gradients(zip(grad, model.trainable_variables))
-
-#     return loss, metric.result()
 
 
 def train_step_torch(model, sequence):
@@ -69,30 +47,14 @@ def train_step_torch(model, sequence):
 def test_step_tf(model, sequence, device):
     model.reset_metrics()
 
-    with tf.device(device):
-        for inputs, imask, labels in sequence:
-            results = model.test_on_batch(x=inputs,
-                                          imask=imask,
-                                          y=labels,
-                                          reset_metrics=False)
+    for inputs, imask, labels in sequence:
+        results = model.test_step_on_batch(x=inputs,
+                                           imask=imask,
+                                           y=labels,
+                                           device=device)
 
     return results
 
-
-# def test_step_tf(model, sequence, device):
-#     model.reset_metrics()
-#     loss_fn = model.loss
-#     metric = model.metrics[0]
-#     optimizer = model.optimizer
-#     model.reset_metrics()
-
-#     loss = 0.
-#     for inputs, labels in sequence:
-#         output = model(inputs, training=False)
-#         loss += loss_fn(labels, output)
-#         metric.update_state(labels, output)
-
-#     return loss, metric.result()
 
 
 @torch.no_grad()

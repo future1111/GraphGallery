@@ -6,6 +6,13 @@ import graphgallery as gg
 from graphgallery import functional as gf
 from typing import Any
 
+def mask_or_gather(out, imask):
+    if imask is not None:
+        if imask.dtype.is_bool:
+            return tf.boolean_mask(out, imask)
+        else:
+            return tf.gather(out, imask)
+    return out
 
 def sparse_edge_to_sparse_tensor(edge_index: np.ndarray,
                                  edge_weight: np.ndarray = None,

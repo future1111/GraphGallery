@@ -34,8 +34,6 @@ class GCN(GalleryModel):
                 with a `graphgallery.data.Graph` instance representing
                 A sparse, attributed, labeled graph.
 
-
-
         Parameters:
         ----------
         graph: An instance of `graphgallery.data.Graph`.
@@ -88,7 +86,7 @@ class GCN(GalleryModel):
               dropout=0.5,
               weight_decay=5e-4,
               lr=0.01,
-              use_bias=False):
+              use_bias=True):
 
         with tf.device(self.device):
             self.model = tfGCN(self.graph.num_node_attrs,

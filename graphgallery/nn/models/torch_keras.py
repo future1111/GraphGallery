@@ -12,6 +12,7 @@ from graphgallery.utils import saver
 class TorchKeras(nn.Module):
     """Keras like PyTorch Model."""
     def __init__(self, *args, **kwargs):
+        self.__doc__ = super().__doc__
 
         super().__init__(*args, **kwargs)
 
@@ -24,7 +25,36 @@ class TorchKeras(nn.Module):
         self.optimizer = None
         self.metrics = None
         self.loss = None
+        self._loss
+        
+    def train_step_on_batch(self,
+                            x,
+                            imask=None,
+                            y=None,
+                            device="CPU"):
+        self.train()
+        optimizer = self.optimizer
+        loss_fn = self.loss
+        metrics = self.metrics
+        if not isinstance(x, (list, tuple)):
+            x = [x]
 
+        loss = torch.tensor(0.)
+        optimizer.zero_grad()
+        out = self(*x if isinstance(x, list) else [x])
+        if imask is not None:
+            out = out[imask]
+        _loss = loss_fn(out, y)
+        _loss.backward()
+        optimizer.step()
+        with torch.no_grad():
+            loss += _loss.data.cpu()
+            for metric in metrics:
+                metric.update_state(labels.detach().cpu(), out.detach().cpu())
+
+        results = [loss.detach().item()] + [metric.result().item() for metric in metrics]
+        return dict(zip(self.metrics_names, results))        
+        
     def build(self, inputs):
         # TODO
         pass
