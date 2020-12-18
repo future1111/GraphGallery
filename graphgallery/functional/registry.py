@@ -62,7 +62,7 @@ class Registry(Iterable[Tuple[str, object]]):
                     try:
                         name = func_or_class.__name__  # pyre-ignore
                     except AttributeError:
-                        name = str(obj)                    
+                        name = str(obj)
                 self._do_register(name, func_or_class, freeze=freeze)
                 return func_or_class
 
@@ -83,6 +83,7 @@ class Registry(Iterable[Tuple[str, object]]):
                 "No object named '{}' found in '{}' registry!".format(name, self._name)
             )
         return ret
+    __getattr__ = get
 
     def items(self):
         return self._obj_map.items()
@@ -93,9 +94,12 @@ class Registry(Iterable[Tuple[str, object]]):
     def objects(self):
         return self._obj_map.values()
 
+    def __dir__(self):
+        return self._obj_map.keys()
+
     def __contains__(self, name: str) -> bool:
         return name in self._obj_map
-    
+
     def __getattr__(self, name: str) -> object:
         return self.get(name)
 

@@ -12,24 +12,25 @@ class MiniBatchSequence(Sequence):
         self,
         x,
         y,
+        sample_weight=None,
         shuffle=False,
         batch_size=1,
         *args, **kwargs
     ):
         super().__init__(*args, **kwargs)
         assert batch_size == 1
-        self.x, self.y = self.astensors(x, y)
-        self.n_batches = len(self.x)
+        self.n_batches = len(x)
         self.shuffle = shuffle
-        self.batch_size = batch_size
         self.indices = list(range(self.n_batches))
+        self.x, self.y, self.sample_weight = self.astensors(x, y, sample_weight)
+        self.batch_size = batch_size
 
     def __len__(self):
         return self.n_batches
 
     def __getitem__(self, index):
         idx = self.indices[index]
-        return self.x[idx], self.y[idx]
+        return self.x[idx], self.y[idx], self.sample_weight[idx]
 
     def on_epoch_end(self):
         if self.shuffle:
@@ -48,6 +49,7 @@ class SAGEMiniBatchSequence(Sequence):
         self,
         x,
         y=None,
+        sample_weight=None,
         n_samples=[5, 5],
         shuffle=False,
         batch_size=512,
@@ -83,6 +85,9 @@ class SAGEMiniBatchSequence(Sequence):
         y = self.y[idx] if self.y is not None else None
 
         return self.astensors([self.node_attr, *nodes_input], y)
+
+    def on_epoch_end(self):
+        pass
 
     def on_epoch_end(self):
         if self.shuffle:
@@ -167,6 +172,9 @@ class FastGCNBatchSequence(Sequence):
         node_attr = self.node_attr
 
         return (node_attr, adj_matrix), y
+
+    def on_epoch_end(self):
+        pass
 
     def on_epoch_end(self):
         if self.shuffle:

@@ -17,7 +17,7 @@ else:
 class TFKeras(Model):
     """High-level encapsulation of Tensorflow Keras Model."""
 
-    @tf.function
+    @tf.function(experimental_relax_shapes=True)
     def train_step_on_batch(self,
                             x,
                             y=None,
@@ -48,7 +48,7 @@ class TFKeras(Model):
             results = [loss] + [metric.result() for metric in getattr(metrics, "metrics", metrics)]
             return dict(zip(self.metrics_names, results))
 
-    @tf.function
+    @tf.function(experimental_relax_shapes=True)
     def test_step_on_batch(self,
                            x,
                            y=None,
@@ -70,7 +70,7 @@ class TFKeras(Model):
             results = [loss] + [metric.result() for metric in getattr(metrics, "metrics", metrics)]
             return dict(zip(self.metrics_names, results))
 
-    @tf.function
+    @tf.function(experimental_relax_shapes=True)
     def predict_step_on_batch(self, x, sample_weight=None, device="CPU"):
         with tf.device(device):
             out = self(x, training=False)

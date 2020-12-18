@@ -75,7 +75,7 @@ class ClusterGCN(GalleryModel):
                          attr_transform=attr_transform,
                          graph_transform=graph_transform,
                          **kwargs)
-
+        n_clusters = n_clusters or graph.num_node_classes
         self.register_cache("n_clusters", n_clusters)
         self.process()
 
@@ -84,7 +84,7 @@ class ClusterGCN(GalleryModel):
         graph.node_attr = self.transform.attr_transform(graph.node_attr)
 
         batch_adj, batch_x, cluster_member = gf.graph_partition(
-            graph, n_clusters=self.cache.n_clusters)
+            graph, n_clusters=self.cache.n_clusters, metis_partition=False)
 
         batch_adj = self.transform.adj_transform(*batch_adj)
         batch_adj, batch_x = gf.astensors(batch_adj, batch_x, device=self.device)
@@ -133,10 +133,11 @@ class ClusterGCN(GalleryModel):
             batch_idx.append(np.where(batch_mask)[0])
             batch_labels.append(y)
 
-        batch_data = tuple(zip(batch_x, batch_adj, batch_idx))
+        batch_data = tuple(zip(batch_x, batch_adj))
 
         sequence = MiniBatchSequence(batch_data,
                                      batch_labels,
+                                     sample_weight=batch_idx,
                                      device=self.device)
         return sequence
 
@@ -158,16 +159,16 @@ class ClusterGCN(GalleryModel):
             batch_idx.append(np.where(batch_mask)[0])
             orders.append([orders_dict[n] for n in batch_nodes])
 
-        batch_data = tuple(zip(batch_x, batch_adj, batch_idx))
+        batch_data = tuple(zip(batch_x, batch_adj))
 
         logit = np.zeros((index.size, self.graph.num_node_classes),
                          dtype=self.floatx)
-        batch_data = gf.astensors(batch_data, device=self.device)
+        batch_data, batch_idx = gf.astensors(batch_data, batch_idx, device=self.device)
 
         model = self.model
         with tf.device(self.device):
-            for order, inputs in zip(orders, batch_data):
-                output = model.predict_on_batch(inputs)
+            for order, inputs, idx in zip(orders, batch_data, batch_idx):
+                output = model.predict_step_on_batch(inputs, sample_weight=idx)
                 logit[order] = output
 
         return logit
