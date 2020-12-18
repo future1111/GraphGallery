@@ -114,8 +114,9 @@ class LGCN(GalleryModel):
         labels = self.graph.node_label[index[mask]]
 
         sequence = FullBatchSequence(
-            [feature_inputs, structure_inputs, mask],
+            [feature_inputs, structure_inputs],
             labels,
+            sample_weight=mask,
             device=self.device)
         return sequence
 

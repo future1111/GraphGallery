@@ -4,9 +4,9 @@ from tensorflow.keras.optimizers import Adam
 from tensorflow.keras import regularizers
 from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
-from graphgallery.nn.layers.tensorflow import GraphConvolution, Gather
-from graphgallery import floatx, intx
+from graphgallery.nn.layers.tensorflow import GraphConvolution
 from graphgallery.nn.models import TFKeras
+from graphgallery import floatx
 
 
 class FastGCN(TFKeras):

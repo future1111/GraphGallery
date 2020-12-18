@@ -31,6 +31,18 @@ warnings.filterwarnings(
     '.*Converting sparse IndexedSlices to a dense Tensor of unknown shape.*')
 
 
+def unravel_batch(batch):
+    inputs = labels = sample_weight = None
+    if isinstance(batch, (list, tuple)):
+        inputs = batch[0]
+        labels = batch[1]
+        if len(batch) > 2:
+            sample_weight = batch[-1]
+    else:
+        inputs = batch
+    return inputs, labels, sample_weight
+
+
 class GalleryModel(GraphModel):
     def __init__(self, graph, device="cpu", seed=None, name=None, **kwargs):
         """Create a graphgallery model.
@@ -47,7 +59,7 @@ class GalleryModel(GraphModel):
         name: string. optional
             Specified name for the model. (default: :str: `class.__name__`)
         kwargs: keyword parameters for transform, including:
-            ``adj_transform``, ``attr_transform``, 
+            ``adj_transform``, ``attr_transform``,
             ``label_transform``, ``graph_transform``, etc.
         """
         super().__init__(graph, device=device, seed=seed, name=name, **kwargs)
@@ -159,7 +171,7 @@ class GalleryModel(GraphModel):
         epochs: Positive integer
             The number of epochs of training.(default :obj: `200`)
         early_stopping: Positive integer or None
-            The number of early stopping patience during training. 
+            The number of early stopping patience during training.
             (default :obj: `None`, i.e., do not use early stopping during training)
         verbose: int in {0, 1, 2, 3, 4}
             'verbose=0': not verbose;
@@ -173,18 +185,18 @@ class GalleryModel(GraphModel):
             of training or validation (depend on `validation` is `False` or `True`).
             (default :bool: `True`)
         ckpt_path: String or None
-            The path of saved weights/model. 
+            The path of saved weights/model.
             (default to current path.)
         as_model: bool
             Whether to save the whole model or weights only, if `True`, the `self.custom_objects`
             must be speficied if you are using custom `layer` or `loss` and so on.
         monitor: String
-            One of evaluation metrics, e.g., val_loss, val_accuracy, loss, accuracy, 
-            it determines which metric will be used for `save_best`. 
+            One of evaluation metrics, e.g., val_loss, val_accuracy, loss, accuracy,
+            it determines which metric will be used for `save_best`.
             (default :obj: `val_accuracy`)
         early_stop_metric: String
-            One of evaluation metrics, e.g., val_loss, val_accuracy, loss, accuracy, 
-            it determines which metric will be used for early stopping. 
+            One of evaluation metrics, e.g., val_loss, val_accuracy, loss, accuracy,
+            it determines which metric will be used for early stopping.
             (default :obj: `val_loss`)
         callbacks: tensorflow.keras.callbacks. (default :obj: `None`)
         kwargs: other keyword Parameters.
@@ -380,7 +392,8 @@ class GalleryModel(GraphModel):
         model = self.model
         model.reset_metrics()
 
-        for inputs, labels, sample_weight in sequence:
+        for batch in sequence:
+            inputs, labels, sample_weight = unravel_batch(batch)
             results = model.train_step_on_batch(x=inputs,
                                                 y=labels,
                                                 sample_weight=sample_weight,
@@ -415,7 +428,8 @@ class GalleryModel(GraphModel):
         model = self.model
         model.reset_metrics()
 
-        for inputs, labels, sample_weight in sequence:
+        for batch in sequence:
+            inputs, labels, sample_weight = unravel_batch(batch)
             results = model.test_step_on_batch(x=inputs,
                                                y=labels,
                                                sample_weight=sample_weight,
@@ -443,7 +457,7 @@ class GalleryModel(GraphModel):
         Return:
         ----------
         The predicted probability of each class for each object,
-            for node classification task, it has shape 
+            for node classification task, it has shape
             (num_nodes, num_node_classes).
 
         """
@@ -466,9 +480,10 @@ class GalleryModel(GraphModel):
     def predict_step(self, sequence):
         logits = []
         model = self.model
-        for inputs, labels, sample_weight in sequence:
-            logit = model.predict_step_on_batch(x=inputs, 
-                                                sample_weight=sample_weight, 
+        for batch in sequence:
+            inputs, labels, sample_weight = unravel_batch(batch)
+            logit = model.predict_step_on_batch(x=inputs,
+                                                sample_weight=sample_weight,
                                                 device=self.device)
             logits.append(logit)
 
@@ -495,7 +510,7 @@ class GalleryModel(GraphModel):
 
         Note:
         -----
-        If not implemented, this method will call `train_sequence` automatically.        
+        If not implemented, this method will call `train_sequence` automatically.
         """
         return self.test_sequence(inputs)
 
