@@ -8,7 +8,10 @@ from graphgallery.nn.models.tensorflow import DenseGCN as tfGCN
 
 from graphgallery import functional as gf
 
+from graphgallery.gallery import TensorFlow
 
+
+@TensorFlow.register()
 class DenseGCN(GalleryModel):
     """
         Implementation of Dense version of Graph Convolutional Networks (GCN).

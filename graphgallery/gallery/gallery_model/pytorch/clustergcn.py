@@ -6,7 +6,10 @@ from graphgallery.sequence import MiniBatchSequence
 from graphgallery.nn.models.pytorch import GCN as pyGCN
 from graphgallery import functional as gf
 
+from graphgallery.gallery import PyTorch
 
+
+@PyTorch.register()
 class ClusterGCN(GalleryModel):
     """
         Implementation of Cluster Graph Convolutional Networks (ClusterGCN).

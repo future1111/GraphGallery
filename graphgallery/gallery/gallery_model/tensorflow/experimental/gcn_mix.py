@@ -9,7 +9,10 @@ from graphgallery.nn.layers.tensorflow import GraphConvolution
 from graphgallery.sequence import FullBatchSequence
 from ..fastgcn import FastGCN
 
+from graphgallery.gallery import TensorFlow
 
+
+@TensorFlow.register()
 class GCN_MIX(FastGCN):
     """
         Implementation of Mixed Graph Convolutional Networks (GCN_MIX) 

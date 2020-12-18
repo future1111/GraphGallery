@@ -7,7 +7,10 @@ from graphgallery.nn.models.tensorflow import DAGNN as tfDAGNN
 
 from graphgallery import functional as gf
 
+from graphgallery.gallery import TensorFlow
 
+
+@TensorFlow.register()
 class DAGNN(GalleryModel):
     """
         Implementation of Deep Adaptive Graph Neural Network (DAGNN). 

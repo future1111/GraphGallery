@@ -7,7 +7,10 @@ from graphgallery.nn.models.tensorflow import GWNN as tfGWNN
 
 from graphgallery import functional as gf
 
+from graphgallery.gallery import TensorFlow
 
+
+@TensorFlow.register()
 class GWNN(GalleryModel):
     """
         Implementation of Graph Wavelet Neural Networks (GWNN). 

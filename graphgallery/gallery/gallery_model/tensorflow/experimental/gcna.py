@@ -7,7 +7,10 @@ from graphgallery.nn.models.tensorflow import GCNA as tfGCNA
 from graphgallery import functional as gf
 from ..gcn import GCN
 
+from graphgallery.gallery import TensorFlow
 
+
+@TensorFlow.register()
 class GCNA(GCN):
     """
     GCN + node attribute matrix

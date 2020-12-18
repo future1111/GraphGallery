@@ -8,8 +8,10 @@ from distutils.version import LooseVersion
 
 from graphgallery.utils.walker import RandomWalker, alias_sample
 from .sklearn_model import SklearnModel
+from graphgallery.gallery import Common
 
 
+@Common.register()
 class Node2vec(SklearnModel):
     """
         Implementation of Node2vec Unsupervised Graph Neural Networks (Node2vec). 

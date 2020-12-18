@@ -97,6 +97,15 @@ class Registry(Iterable[Tuple[str, object]]):
     def __dir__(self):
         return self._obj_map.keys()
 
+    def __add__(self, register):
+        assert isinstance(register, Registry)
+        a = self._obj_map
+        b = register._obj_map
+        c = dict(**a, **b)
+        merged = type(self)(self._name)
+        merged._obj_map = c
+        return merged
+
     def __contains__(self, name: str) -> bool:
         return name in self._obj_map
 
@@ -109,6 +118,9 @@ class Registry(Iterable[Tuple[str, object]]):
             self._obj_map.items(), headers=table_headers, tablefmt="fancy_grid"
         )
         return "Registry of {}:\n".format(self._name) + table
+
+    def __len__(self):
+        return len(self._obj_map)
 
     def __iter__(self) -> Iterator[Tuple[str, object]]:
         return iter(self._obj_map.items())

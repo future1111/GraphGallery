@@ -8,7 +8,10 @@ from graphgallery.nn.models.tensorflow import GraphSAGE as tfGraphSAGE
 
 from graphgallery import functional as gf
 
+from graphgallery.gallery import TensorFlow
 
+
+@TensorFlow.register()
 class GraphSAGE(GalleryModel):
     """
         Implementation of SAmple and aggreGatE Graph Convolutional Networks (GraphSAGE). 

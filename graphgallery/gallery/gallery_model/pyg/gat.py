@@ -3,7 +3,10 @@ from graphgallery.nn.models.pyg import GAT as pygGAT
 from graphgallery.sequence import FullBatchSequence
 from graphgallery import functional as gf
 
+from graphgallery.gallery import PyG
 
+
+@PyG.register()
 class GAT(GalleryModel):
     """
         Implementation of Graph Attention Networks (GAT).

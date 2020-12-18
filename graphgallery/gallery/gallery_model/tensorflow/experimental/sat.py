@@ -12,7 +12,10 @@ from graphgallery.sequence import FullBatchSequence
 from graphgallery import functional as gf
 from graphgallery.nn.models import TFKeras
 
+from graphgallery.gallery import TensorFlow
 
+
+@TensorFlow.register()
 class SAT(GalleryModel):
     def __init__(self,
                  graph,

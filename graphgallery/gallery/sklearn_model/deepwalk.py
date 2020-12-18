@@ -7,7 +7,10 @@ from distutils.version import LooseVersion
 
 from .sklearn_model import SklearnModel
 
+from graphgallery.gallery import Common
 
+
+@Common.register()
 class Deepwalk(SklearnModel):
     """
         Implementation of DeepWalk Unsupervised Graph Neural Networks (DeepWalk). 

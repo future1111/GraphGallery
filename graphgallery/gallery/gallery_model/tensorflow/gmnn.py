@@ -14,7 +14,10 @@ from graphgallery.gallery import GalleryModel
 from graphgallery import functional as gf
 from graphgallery.nn.models import TFKeras
 
+from graphgallery.gallery import TensorFlow
 
+
+@TensorFlow.register()
 class GMNN(GalleryModel):
     """
         Implementation of Graph Markov Neural Networks (GMNN).

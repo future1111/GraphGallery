@@ -8,7 +8,10 @@ from graphgallery.sequence import FullBatchSequence
 
 from graphgallery import functional as gf
 
+from graphgallery.gallery import TensorFlow
 
+
+@TensorFlow.register()
 class SGC(GalleryModel):
     """
         Implementation of Simplifying Graph Convolutional Networks (SGC). 

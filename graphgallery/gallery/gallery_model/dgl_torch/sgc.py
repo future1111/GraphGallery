@@ -4,7 +4,10 @@ from graphgallery.sequence import FullBatchSequence
 
 from graphgallery import functional as gf
 
+from graphgallery.gallery import DGL_PyTorch
 
+
+@DGL_PyTorch.register()
 class SGC(GalleryModel):
     """
         Implementation of Simplifying Graph Convolutional Networks (SGC). 

@@ -12,7 +12,10 @@ from graphgallery import functional as gf
 from graphgallery.nn.models import TFKeras
 from ..obvat import OBVAT
 
+from graphgallery.gallery import TensorFlow
 
+
+@TensorFlow.register()
 class SimplifiedOBVAT(OBVAT):
     """
         Implementation of optimization-based Batch Virtual Adversarial Training  Graph Convolutional Networks (OBVAT). 

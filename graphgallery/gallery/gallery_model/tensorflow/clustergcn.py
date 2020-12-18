@@ -7,7 +7,10 @@ from graphgallery.sequence import MiniBatchSequence
 from graphgallery.nn.models.tensorflow import GCN as tfGCN
 from graphgallery import functional as gf
 
+from graphgallery.gallery import TensorFlow
 
+
+@TensorFlow.register()
 class ClusterGCN(GalleryModel):
     """
         Implementation of Cluster Graph Convolutional Networks (ClusterGCN).

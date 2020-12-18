@@ -3,7 +3,10 @@ from graphgallery.nn.models.pyg import SGC as pygSGC
 from graphgallery.sequence import FullBatchSequence
 from graphgallery import functional as gf
 
+from graphgallery.gallery import PyG
 
+
+@PyG.register()
 class SGC(GalleryModel):
     """
         Implementation of Simplifying Graph Convolutional Networks (SGC). 

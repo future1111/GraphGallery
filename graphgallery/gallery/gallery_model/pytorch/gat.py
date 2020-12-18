@@ -5,7 +5,10 @@ from graphgallery.sequence import FullBatchSequence
 from graphgallery.nn.models.pytorch import GAT as pyGAT
 from graphgallery import functional as gf
 
+from graphgallery.gallery import PyTorch
 
+
+@PyTorch.register()
 class GAT(GalleryModel):
     """
         Implementation of Graph Attention Networks (GAT).

@@ -6,7 +6,10 @@ from graphgallery.sequence import FullBatchSequence
 from graphgallery.nn.models.tensorflow import RobustGCN as tfRobustGCN
 from graphgallery import functional as gf
 
+from graphgallery.gallery import TensorFlow
 
+
+@TensorFlow.register()
 class RobustGCN(GalleryModel):
     """
         Implementation of Robust Graph Convolutional Networks (RobustGCN). 

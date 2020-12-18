@@ -14,7 +14,10 @@ from graphgallery.utils.bvat_utils import kl_divergence_with_logit, entropy_y_x
 from graphgallery import functional as gf
 from graphgallery.nn.models import TFKeras
 
+from graphgallery.gallery import TensorFlow
 
+
+@TensorFlow.register()
 class OBVAT(GalleryModel):
     """
         Implementation of optimization-based Batch Virtual Adversarial Training 

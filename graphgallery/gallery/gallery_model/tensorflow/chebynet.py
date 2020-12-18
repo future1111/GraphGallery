@@ -6,8 +6,10 @@ from graphgallery.sequence import FullBatchSequence
 from graphgallery.nn.models.tensorflow import ChebyNet as tfChebyNet
 
 from graphgallery import functional as gf
+from graphgallery.gallery import TensorFlow
 
 
+@TensorFlow.register()
 class ChebyNet(GalleryModel):
     """
         Implementation of Chebyshev Graph Convolutional Networks (ChebyNet).

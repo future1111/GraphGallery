@@ -9,7 +9,10 @@ from graphgallery import functional as gf
 
 from graphgallery.nn.models.tensorflow import GCN as tfGCN
 
+from graphgallery.gallery import TensorFlow
 
+
+@TensorFlow.register()
 class SBVAT(GalleryModel):
     """
         Implementation of sample-based Batch Virtual Adversarial Training

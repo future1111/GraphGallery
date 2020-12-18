@@ -8,7 +8,10 @@ from graphgallery.nn.models.tensorflow import LGCN as tfLGCN
 
 from graphgallery import functional as gf
 
+from graphgallery.gallery import TensorFlow
 
+
+@TensorFlow.register()
 class LGCN(GalleryModel):
     """
         Implementation of Large-Scale Learnable Graph Convolutional Networks (LGCN).

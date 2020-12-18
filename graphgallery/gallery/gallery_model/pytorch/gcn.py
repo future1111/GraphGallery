@@ -4,7 +4,10 @@ from graphgallery.sequence import FullBatchSequence
 from graphgallery.nn.models.pytorch import GCN as pyGCN
 from graphgallery import functional as gf
 
+from graphgallery.gallery import PyTorch
 
+
+@PyTorch.register()
 class GCN(GalleryModel):
     """
         Implementation of Graph Convolutional Networks (GCN). 

@@ -7,7 +7,10 @@ from graphgallery.sequence import FullBatchSequence
 from graphgallery.nn.models.tensorflow import GAT as tfGAT
 from graphgallery import functional as gf
 
+from graphgallery.gallery import TensorFlow
 
+
+@TensorFlow.register()
 class GAT(GalleryModel):
     """
         Implementation of Graph Attention Networks (GAT).

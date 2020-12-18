@@ -7,7 +7,10 @@ from graphgallery.nn.models.tensorflow import EdgeGCN as tfEdgeGCN
 
 from graphgallery import functional as gf
 
+from graphgallery.gallery import TensorFlow
 
+
+@TensorFlow.register()
 class EdgeGCN(GalleryModel):
     """
         Implementation of Graph Convolutional Networks (GCN) -- Edge Convolution version.

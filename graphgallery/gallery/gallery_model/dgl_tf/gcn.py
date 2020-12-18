@@ -6,7 +6,10 @@ from graphgallery.sequence import FullBatchSequence
 
 from graphgallery.nn.models.dgl_tf import GCN as dglGCN
 
+from graphgallery.gallery import DGL_TensorFlow
 
+
+@DGL_TensorFlow.register()
 class GCN(GalleryModel):
     """
         Implementation of Graph Convolutional Networks (GCN). 

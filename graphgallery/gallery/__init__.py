@@ -1,85 +1,38 @@
 from .model import Model
 from .graph_model import GraphModel
 from .gallery_model.gallery_model import GalleryModel
+from .model_zoos import (TensorFlow, PyTorch, PyG,
+                         DGL_PyTorch, DGL_TensorFlow,
+                         Common,
+                         MAPPING)
 from .sklearn_model.sklearn_model import SklearnModel
+from .sklearn_model import *
 
 import sys
 import importlib
 from typing import Tuple
 from graphgallery import backend
-from graphgallery import functional as gf
 
-__all__ = ["Gallery", "Model"]
-
-Gallery = gf.Registry("GraphGalleryModels")
-
-_GALLERY_MODELS = {
-    "GCN",
-    "GAT",
-    "ClusterGCN",
-    "SGC",
-    "GWNN",
-    "RobustGCN",
-    "GraphSAGE",
-    "FastGCN",
-    "ChebyNet",
-    "DenseGCN",
-    "LGCN",
-    "OBVAT",
-    "SBVAT",
-    "GMNN",
-    "DAGNN",
-    # Experimental models
-    "EdgeGCN",
-    "SimplifiedOBVAT",
-    "GCN_MIX",
-    "GCNA",
-    "SAT",
-    "MedianGCN"    
-}
-
-_SKLEARN_MODELS = {
-    "Node2vec",
-    "Deepwalk",
-}
+__all__ = ["Model", "enabled_models",
+           "is_enabled", "GraphModel",
+           "GalleryModel", "SklearnModel"]
 
 
-def _gen_missing_model(model, backend):
-    def _missing_model(*args, **kwargs):
-        raise ImportError(f"model {model} is not supported by '{backend}'."
-                          " You can switch to other backends by setting"
-                          " the 'graphgallery.backend' environment.")
+def get_registry(backend_name=None):
+    _backend = backend(backend_name)
+    gallery = MAPPING[_backend.abbr]
+    return gallery
 
-    return _missing_model
+    mod = importlib.import_module(f".gallery_model.{_backend.abbr}", __name__)
 
 
 def load_models(backend_name=None):
     _backend = backend(backend_name)
     thismod = sys.modules[__name__]
-    mod = importlib.import_module(f".gallery_model.{_backend.abbr}", __name__)
+    importlib.import_module(f".gallery_model.{_backend.abbr}", __name__)
 
-    global Gallery
-    Gallery = gf.Registry("GraphGalleryModels")
-
-    for model in _GALLERY_MODELS:
-        _model_class = mod.__dict__.get(model, None)
-
-        if _model_class is not None:
-            Gallery.register(_model_class)
-            setattr(thismod, model, _model_class)
-        else:
-            setattr(thismod, model, _gen_missing_model(model, _backend))
-
-    mod = importlib.import_module(f".sklearn_model", __name__)
-
-    for model in _SKLEARN_MODELS:
-        _model_class = mod.__dict__.get(model, None)
-
-        if _model_class is not None:
-            Gallery.register(_model_class)
-            setattr(thismod, model, _model_class)
-        else:
-            setattr(thismod, model, _gen_missing_model(model, _backend))
+    for model, model_class in get_registry(_backend).items():
+        setattr(thismod, model, model_class)
 
 
 def is_enabled(model: str) -> bool:
@@ -95,7 +48,7 @@ def is_enabled(model: str) -> bool:
     bool
         True if the model is enabled by the current backend.
     """
-    return model in Gallery
+    return model in get_registry()
 
 
 def enabled_models() -> Tuple[str]:
@@ -106,7 +59,7 @@ def enabled_models() -> Tuple[str]:
     tuple
         A list of models enabled by the current backend.
     """
-    return tuple(Gallery.names())
+    return get_registry() + Common
 
 
 load_models()

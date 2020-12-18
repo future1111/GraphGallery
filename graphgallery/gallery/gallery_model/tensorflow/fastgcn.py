@@ -7,7 +7,10 @@ from graphgallery.nn.models.tensorflow import FastGCN as tfFastGCN
 
 from graphgallery import functional as gf
 
+from graphgallery.gallery import TensorFlow
 
+
+@TensorFlow.register()
 class FastGCN(GalleryModel):
     """
         Implementation of Fast Graph Convolutional Networks (FastGCN).
