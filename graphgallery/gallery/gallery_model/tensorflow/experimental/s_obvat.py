@@ -96,9 +96,6 @@ class SimplifiedOBVAT(OBVAT):
                         dtype=self.floatx,
                         sparse=True,
                         name='adj_matrix')
-            index = Input(batch_shape=[None],
-                          dtype=self.intx,
-                          name='node_index')
 
             GCN_layers = []
             for hidden, activation in zip(hiddens, activations):
@@ -116,16 +113,15 @@ class SimplifiedOBVAT(OBVAT):
             self.GCN_layers = GCN_layers
             self.dropout = Dropout(rate=dropout)
 
-            logit = self.forward(x, adj)
-            output = Gather()([logit, index])
+            h = self.forward(x, adj)
 
-            model = TFKeras(inputs=[x, adj, index], outputs=output)
+            model = TFKeras(inputs=[x, adj], outputs=h)
             model.compile(loss=SparseCategoricalCrossentropy(from_logits=True),
                           optimizer=Adam(lr=lr),
                           metrics=['accuracy'])
 
-            entropy_loss = entropy_y_x(logit)
-            vat_loss = self.virtual_adversarial_loss(x, adj, logit, epsilon)
+            entropy_loss = entropy_y_x(h)
+            vat_loss = self.virtual_adversarial_loss(x, adj, h, epsilon)
             model.add_loss(p1 * vat_loss + p2 * entropy_loss)
 
             self.model = model

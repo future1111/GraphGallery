@@ -28,8 +28,7 @@ class Dataset:
 
         if url:
             self._url = url
-        else:
-            self._url = None
+
         self.root = root
         self.name = str(name)
         self.verbose = verbose

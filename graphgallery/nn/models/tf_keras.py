@@ -1,6 +1,7 @@
 import tensorflow as tf
 from tensorflow.keras import Model
 from graphgallery.utils import merge_as_list
+from tensorflow.keras.activations import softmax
 from graphgallery import functional as gf
 from graphgallery.functional.tensor.tensorflow import mask_or_gather
 
@@ -71,10 +72,14 @@ class TFKeras(Model):
             return dict(zip(self.metrics_names, results))
 
     @tf.function(experimental_relax_shapes=True)
-    def predict_step_on_batch(self, x, out_weight=None, device="CPU"):
+    def predict_step_on_batch(self, x, out_weight=None,
+                              return_logits=True,
+                              device="CPU"):
         with tf.device(device):
             out = self(x, training=False)
             out = mask_or_gather(out, out_weight)
+            if not return_logits:
+                out = softmax(out)
         return out
 
     @property

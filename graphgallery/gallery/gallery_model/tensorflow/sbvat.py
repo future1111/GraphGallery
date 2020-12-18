@@ -6,10 +6,18 @@ from graphgallery.sequence import SBVATSampleSequence, FullBatchSequence
 from graphgallery.utils.bvat_utils import get_normalized_vector, kl_divergence_with_logit, entropy_y_x
 
 from graphgallery import functional as gf
-
+from graphgallery.functional.tensor.tensorflow import mask_or_gather
 from graphgallery.nn.models.tensorflow import GCN as tfGCN
-
 from graphgallery.gallery import TensorFlow
+
+from distutils.version import LooseVersion
+
+if LooseVersion(tf.__version__) >= LooseVersion("2.2.0"):
+    METRICS = "compiled_metrics"
+    LOSS = "compiled_loss"
+else:
+    METRICS = "metrics"
+    LOSS = "loss"
 
 
 @TensorFlow.register()
@@ -114,8 +122,6 @@ class SBVAT(GalleryModel):
                                weight_decay=weight_decay,
                                lr=lr,
                                use_bias=use_bias)
-            self.register_cache("index_all", tf.range(self.graph.num_nodes,
-                                                      dtype=self.intx))
 
         self.register_cache("p1", p1)  # Alpha
         self.register_cache("p2", p2)  # Beta
@@ -127,19 +133,18 @@ class SBVAT(GalleryModel):
     @tf.function
     def train_step(self, sequence):
         model = self.model
-        metric = model.metrics[0]
-        loss_fn = model.loss
+        loss_fn = getattr(model, LOSS)
+        metrics = getattr(model, METRICS)
         optimizer = model.optimizer
 
         with tf.device(self.device):
-            metric.reset_states()
 
-            for inputs, labels in sequence:
-                x, adj, index, adv_mask = inputs
+            for inputs, y, out_weight in sequence:
+                x, adj, adv_mask = inputs
                 with tf.GradientTape() as tape:
-                    logit = model([x, adj, self.cache.index_all], training=True)
-                    output = tf.gather(logit, index)
-                    loss = loss_fn(labels, output)
+                    logit = model([x, adj], training=True)
+                    out = mask_or_gather(logit, out_weight)
+                    loss = loss_fn(y, out)
                     entropy_loss = entropy_y_x(logit)
                     vat_loss = self.virtual_adversarial_loss(x,
                                                              adj,
@@ -147,13 +152,18 @@ class SBVAT(GalleryModel):
                                                              adv_mask=adv_mask)
                     loss += self.cache.p1 * vat_loss + self.cache.p2 * entropy_loss
 
-                    metric.update_state(labels, output)
+                    if isinstance(metrics, list):
+                        for metric in metrics:
+                            metric.update_state(y, out)
+                    else:
+                        metrics.update_state(y, out)
 
                 trainable_variables = model.trainable_variables
                 gradients = tape.gradient(loss, trainable_variables)
                 optimizer.apply_gradients(zip(gradients, trainable_variables))
 
-            return {"loss": loss, "accuracy": metric.result()}
+            results = [loss] + [metric.result() for metric in getattr(metrics, "metrics", metrics)]
+            return dict(zip(model.metrics_names, results))
 
     def virtual_adversarial_loss(self, x, adj, logit, adv_mask):
         d = tf.random.normal(shape=tf.shape(x), dtype=self.floatx)
@@ -163,14 +173,14 @@ class SBVAT(GalleryModel):
             logit_p = logit
             with tf.GradientTape() as tape:
                 tape.watch(d)
-                logit_m = model([x + d, adj, self.cache.index_all], training=True)
+                logit_m = model([x + d, adj], training=True)
                 dist = kl_divergence_with_logit(logit_p, logit_m, adv_mask)
             grad = tape.gradient(dist, d)
             d = tf.stop_gradient(grad)
 
         r_vadv = get_normalized_vector(d) * self.cache.epsilon
         logit_p = tf.stop_gradient(logit)
-        logit_m = model([x + r_vadv, adj, self.cache.index_all])
+        logit_m = model([x + r_vadv, adj], training=True)
         loss = kl_divergence_with_logit(logit_p, logit_m, adv_mask)
         return loss
 
@@ -178,12 +188,12 @@ class SBVAT(GalleryModel):
 
         labels = self.graph.node_label[index]
 
-        sequence = SBVATSampleSequence(
-            [self.cache.X, self.cache.A, index],
-            labels,
-            neighbors=self.cache.neighbors,
-            n_samples=self.cache.n_samples,
-            device=self.device)
+        sequence = SBVATSampleSequence([self.cache.X, self.cache.A],
+                                       labels,
+                                       out_weight=index,
+                                       neighbors=self.cache.neighbors,
+                                       n_samples=self.cache.n_samples,
+                                       device=self.device)
 
         return sequence
 

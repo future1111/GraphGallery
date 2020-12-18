@@ -117,7 +117,7 @@ class GraphModel(Model):
         if as_model:
             if self.backend == "tensorflow":
                 self.model = saver.load_tf_model(
-                    path, custom_objects=self.custom_objects)
+                    path, custom_objects=self.model.custom_objects)
             else:
                 self.model = saver.load_torch_model(path)
         else:

@@ -100,10 +100,6 @@ class OBVAT(GalleryModel):
               p1=1.4,
               p2=0.7):
 
-        if self.backend == "torch":
-            raise RuntimeError(
-                f"Currently {self.name} only supports for tensorflow backend.")
-
         with tf.device(self.device):
 
             x = Input(batch_shape=[None, self.graph.num_node_attrs],
@@ -113,9 +109,6 @@ class OBVAT(GalleryModel):
                         dtype=self.floatx,
                         sparse=True,
                         name='adj_matrix')
-            index = Input(batch_shape=[None],
-                          dtype=self.intx,
-                          name='node_index')
 
             GCN_layers = []
             for hidden, activation in zip(hiddens, activations):
@@ -132,23 +125,22 @@ class OBVAT(GalleryModel):
             self.GCN_layers = GCN_layers
             self.dropout = Dropout(rate=dropout)
 
-            logit = self.forward(x, adj)
-            output = Gather()([logit, index])
+            h = self.forward(x, adj)
 
-            model = TFKeras(inputs=[x, adj, index], outputs=output)
+            model = TFKeras(inputs=[x, adj], outputs=h)
             model.compile(loss=SparseCategoricalCrossentropy(from_logits=True),
                           optimizer=Adam(lr=lr),
                           metrics=['accuracy'])
 
-            self.r_vadv = tf.Variable(TruncatedNormal(stddev=0.01)(
-                shape=[self.graph.num_nodes, self.graph.num_node_attrs]),
-                name="r_vadv")
-            entropy_loss = entropy_y_x(logit)
-            vat_loss = self.virtual_adversarial_loss(x, adj, logit)
+            self.r_vadv = tf.Variable(TruncatedNormal(stddev=0.01)(shape=[self.graph.num_nodes,
+                                                                          self.graph.num_node_attrs]),
+                                      name="r_vadv")
+            entropy_loss = entropy_y_x(h)
+            vat_loss = self.virtual_adversarial_loss(x, adj, h)
             model.add_loss(p1 * vat_loss + p2 * entropy_loss)
 
             self.model = model
-            self.adv_optimizer = Adam(lr=lr / 10)
+            self.adv_optimizer = Adam(lr=lr / 10.)
 
     def virtual_adversarial_loss(self, x, adj, logit):
 

@@ -416,7 +416,6 @@ class GalleryModel(GraphModel):
         ----------
         sequence: `graphgallery.Sequence`
             The input `sequence`.
-
         Return:
         ----------
         loss: Float scalar
@@ -436,7 +435,7 @@ class GalleryModel(GraphModel):
                                                device=sequence.device)
         return results
 
-    def predict(self, predict_data=None, return_prob=True):
+    def predict(self, predict_data=None, return_logits=False):
         """
         Predict the output probability for the input data.
 
@@ -450,8 +449,7 @@ class GalleryModel(GraphModel):
         predict_data: Numpy 1D array, optional.
             The indices of objects to predict.
             if None, predict the all objects.
-
-        return_prob: bool.
+        return_logits: bool.
             whether to return the probability of prediction.
 
         Return:
@@ -467,13 +465,16 @@ class GalleryModel(GraphModel):
                 'You must compile your model before training/testing/predicting. Use `model.build()`.'
             )
 
-        if predict_data is not None and not isinstance(predict_data, Sequence):
+        if predict_data is None:
+            predict_data = np.arange(self.graph.num_nodes)
+
+        if not isinstance(predict_data, Sequence):
             predict_data = self.predict_sequence(predict_data)
 
         self.predict_data = predict_data
 
         logit = self.predict_step(predict_data)
-        if return_prob:
+        if not return_logits:
             logit = softmax(logit)
         return logit
 

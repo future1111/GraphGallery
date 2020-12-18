@@ -6,13 +6,22 @@ from tensorflow.keras.optimizers import Adam
 from tensorflow.keras import regularizers
 from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
-from graphgallery.nn.layers.tensorflow import DenseConvolution, Gather
+from graphgallery.nn.layers.tensorflow import DenseConvolution
 from graphgallery.gallery import GalleryModel
 from graphgallery.sequence import FullBatchSequence
 from graphgallery import functional as gf
 from graphgallery.nn.models import TFKeras
-
 from graphgallery.gallery import TensorFlow
+from graphgallery.functional.tensor.tensorflow import mask_or_gather
+
+from distutils.version import LooseVersion
+
+if LooseVersion(tf.__version__) >= LooseVersion("2.2.0"):
+    METRICS = "compiled_metrics"
+    LOSS = "compiled_loss"
+else:
+    METRICS = "metrics"
+    LOSS = "loss"
 
 
 @TensorFlow.register()
@@ -117,11 +126,10 @@ class SAT(GalleryModel):
 
             x = Input(batch_shape=[None, self.graph.num_node_attrs],
                       dtype=self.floatx,
-                      name='features')
+                      name='node_attr')
             adj = Input(batch_shape=[None, None],
                         dtype=self.floatx,
                         name='adj_matrix')
-            index = Input(batch_shape=[None], dtype=self.intx, name='index')
 
             h = x
             for hid, activation in zip(hiddens, activations):
@@ -135,9 +143,8 @@ class SAT(GalleryModel):
 
             h = DenseConvolution(self.graph.num_node_classes,
                                  use_bias=use_bias)([h, adj])
-            h = Gather()([h, index])
 
-            model = TFKeras(inputs=[x, adj, index], outputs=h)
+            model = TFKeras(inputs=[x, adj], outputs=h)
             model.compile(loss=SparseCategoricalCrossentropy(from_logits=True),
                           optimizer=Adam(lr=lr),
                           metrics=['accuracy'])
@@ -148,22 +155,22 @@ class SAT(GalleryModel):
             self.lamb2 = lamb2
             self.model = model
 
-    @tf.function
+    @tf.function(experimental_relax_shapes=True)
     def train_step(self, sequence):
-        (X, A, idx), y = next(iter(sequence))
+        (X, A), y, out_weight = next(iter(sequence))
 
         U, V = self.cache.U, self.cache.V
         model = self.model
-        loss_fn = model.loss
-        metric = model.metrics[0]
+        loss_fn = getattr(model, LOSS)
+        metrics = getattr(model, METRICS)
         optimizer = model.optimizer
-        model.reset_metrics()
 
         with tf.GradientTape() as tape:
             tape.watch([U, V])
             A0 = (U * V) @ tf.transpose(U)
-            output = model([X, A0, idx])
-            loss = loss_fn(y, output)
+            out = model([X, A0], training=True)
+            out = mask_or_gather(out, out_weight)
+            loss = loss_fn(y, out)
 
         U_grad, V_grad = tape.gradient(loss, [U, V])
         U_grad = self.eps1 * U_grad / tf.norm(U_grad)
@@ -176,23 +183,29 @@ class SAT(GalleryModel):
             A1 = (U_hat * V) @ tf.transpose(U_hat)
             A2 = (U * V_hat) @ tf.transpose(U)
 
-            output0 = model([X, A0, idx])
-            output1 = model([X, A1, idx])
-            output2 = model([X, A2, idx])
+            out0 = model([X, A0], training=True)
+            out0 = mask_or_gather(out0, out_weight)
+            out1 = model([X, A1], training=True)
+            out1 = mask_or_gather(out1, out_weight)
+            out2 = model([X, A2], training=True)
+            out2 = mask_or_gather(out2, out_weight)
 
-            loss = loss_fn(y, output0) + tf.reduce_sum(model.losses)
-            loss += self.lamb1 * loss_fn(y, output1) + self.lamb2 * loss_fn(
-                y, output2)
-            metric.update_state(y, output0)
+            loss = loss_fn(y, out0) + tf.reduce_sum(model.losses)
+            loss += self.lamb1 * loss_fn(y, out1) + self.lamb2 * loss_fn(y, out2)
+            if isinstance(metrics, list):
+                for metric in metrics:
+                    metric.update_state(y, out)
+            else:
+                metrics.update_state(y, out)
 
         grads = tape.gradient(loss, model.trainable_variables)
         optimizer.apply_gradients(zip(grads, model.trainable_variables))
 
-        return gf.BunchDict(loss=loss, accuracy=metric.result())
+        results = [loss] + [metric.result() for metric in getattr(metrics, "metrics", metrics)]
+        return dict(zip(model.metrics_names, results))
 
     def train_sequence(self, index):
         labels = self.graph.node_label[index]
-        with tf.device(self.device):
-            sequence = FullBatchSequence(
-                [self.cache.X, self.cache.A, index], labels)
+        sequence = FullBatchSequence([self.cache.X, self.cache.A],
+                                     labels, out_weight=index, device=self.device)
         return sequence

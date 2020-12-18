@@ -6,7 +6,7 @@ from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
 from graphgallery.nn.layers.tensorflow import GraphEdgeConvolution, Gather
 from graphgallery.nn.models import TFKeras
-from graphgallery import floatx
+from graphgallery import floatx, intx
 
 
 class EdgeGCN(TFKeras):

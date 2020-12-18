@@ -78,8 +78,6 @@ class EdgeGCN(GalleryModel):
 
         self.process()
 
-        self.process()
-
     def process_step(self):
         graph = self.transform.graph_transform(self.graph)
         adj_matrix = self.transform.adj_transform(graph.adj_matrix)
@@ -89,8 +87,8 @@ class EdgeGCN(GalleryModel):
         X, E = gf.astensors(node_attr, (edge_index.T, edge_weight),
                             device=self.device)
         # ``E`` and ``X`` are cached for later use
-        self.register_cache("X", X)
         self.register_cache("E", E)
+        self.register_cache("X", X)
 
     # use decorator to make sure all list arguments have the same length
     @gf.equal()
@@ -116,7 +114,8 @@ class EdgeGCN(GalleryModel):
 
         labels = self.graph.node_label[index]
         sequence = FullBatchSequence(
-            [self.cache.X, *self.cache.E, index],
+            [self.cache.X, *self.cache.E],
             labels,
+            out_weight=index,
             device=self.device)
         return sequence

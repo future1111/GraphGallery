@@ -9,7 +9,7 @@ from graphgallery import functional as gf
 from graphgallery.gallery import PyTorch
 
 
-@PyTorch.register(freeze=False)
+@PyTorch.register()
 class ClusterGCN(GalleryModel):
     """
         Implementation of Cluster Graph Convolutional Networks (ClusterGCN).
