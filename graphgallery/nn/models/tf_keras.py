@@ -21,7 +21,7 @@ class TFKeras(Model):
     def train_step_on_batch(self,
                             x,
                             y=None,
-                            sample_weight=None,
+                            out_weight=None,
                             device="CPU"):
         # FIXME: self.metrics would return '[]' for tensorflow>=2.2.0
         # See <https://github.com/tensorflow/tensorflow/issues/37990>
@@ -34,7 +34,7 @@ class TFKeras(Model):
         with tf.device(device):
             with tf.GradientTape() as tape:
                 out = self(x, training=True)
-                out = mask_or_gather(out, sample_weight)
+                out = mask_or_gather(out, out_weight)
                 loss = loss_fn(y, out) + tf.reduce_sum(self.losses)
                 if isinstance(metrics, list):
                     for metric in metrics:
@@ -52,14 +52,14 @@ class TFKeras(Model):
     def test_step_on_batch(self,
                            x,
                            y=None,
-                           sample_weight=None,
+                           out_weight=None,
                            device="CPU"):
         loss_fn = getattr(self, LOSS)
         metrics = getattr(self, METRICS)
 
         with tf.device(device):
             out = self(x, training=False)
-            out = mask_or_gather(out, sample_weight)
+            out = mask_or_gather(out, out_weight)
             loss = loss_fn(y, out) + tf.reduce_sum(self.losses)
             if isinstance(metrics, list):
                 for metric in metrics:
@@ -71,10 +71,10 @@ class TFKeras(Model):
             return dict(zip(self.metrics_names, results))
 
     @tf.function(experimental_relax_shapes=True)
-    def predict_step_on_batch(self, x, sample_weight=None, device="CPU"):
+    def predict_step_on_batch(self, x, out_weight=None, device="CPU"):
         with tf.device(device):
             out = self(x, training=False)
-            out = mask_or_gather(out, sample_weight)
+            out = mask_or_gather(out, out_weight)
         return out
 
     @property

@@ -248,6 +248,6 @@ class GMNN(GalleryModel):
         labels = self.cache.label_onehot[index]
         sequence = FullBatchSequence([self.cache.X, self.cache.A],
                                      labels,
-                                     sample_weight=index,
+                                     out_weight=index,
                                      device=self.device)
         return sequence

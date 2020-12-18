@@ -119,7 +119,7 @@ class LGCN(GalleryModel):
         sequence = FullBatchSequence(
             [feature_inputs, structure_inputs],
             labels,
-            sample_weight=mask,
+            out_weight=mask,
             device=self.device)
         return sequence
 

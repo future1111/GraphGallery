@@ -113,6 +113,6 @@ class DAGNN(GalleryModel):
         labels = self.graph.node_label[index]
         sequence = FullBatchSequence([self.cache.X, self.cache.A],
                                      labels,
-                                     sample_weight=index,
+                                     out_weight=index,
                                      device=self.device)
         return sequence

@@ -7,12 +7,12 @@ from graphgallery import functional as gf
 from typing import Any
 
 
-def mask_or_gather(out, sample_weight):
-    if sample_weight is not None:
-        if sample_weight.dtype.is_bool:
-            return tf.boolean_mask(out, sample_weight)
+def mask_or_gather(out, out_weight):
+    if out_weight is not None:
+        if out_weight.dtype.is_bool:
+            return tf.boolean_mask(out, out_weight)
         else:
-            return tf.gather(out, sample_weight)
+            return tf.gather(out, out_weight)
     return out
 
 

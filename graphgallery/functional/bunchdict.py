@@ -48,7 +48,10 @@ class BunchDict(OrderedDict):
 def prettify(item):
     key, val = item
     if hasattr(val, "shape"):
-        val = f"{val.__class__.__name__}, shape={val.shape}"
+        if len(val.shape) == 0 and hasattr(val, "item"):
+            val = f"{val.__class__.__name__}, {val.item()}"
+        else:
+            val = f"{val.__class__.__name__}, shape={val.shape}"
     else:
         try:
             val = f"{type(val).__name__}, len={len(val)}"

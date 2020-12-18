@@ -87,7 +87,7 @@ class ClusterGCN(GalleryModel):
         graph.node_attr = self.transform.attr_transform(graph.node_attr)
 
         batch_adj, batch_x, cluster_member = gf.graph_partition(
-            graph, n_clusters=self.cache.n_clusters, metis_partition=False)
+            graph, n_clusters=self.cache.n_clusters, metis_partition=True)
 
         batch_adj = self.transform.adj_transform(*batch_adj)
         batch_adj, batch_x = gf.astensors(batch_adj, batch_x, device=self.device)
@@ -120,58 +120,55 @@ class ClusterGCN(GalleryModel):
 
     def train_sequence(self, index):
 
-        mask = gf.index_to_mask(index, self.graph.num_nodes)
+        node_mask = gf.index_to_mask(index, self.graph.num_nodes)
         labels = self.graph.node_label
 
-        batch_idx, batch_labels = [], []
+        batch_mask, batch_y = [], []
         batch_x, batch_adj = [], []
         for cluster in range(self.cache.n_clusters):
             nodes = self.cache.cluster_member[cluster]
-            batch_mask = mask[nodes]
-            y = labels[nodes][batch_mask]
+            mask = node_mask[nodes]
+            y = labels[nodes][mask]
             if y.size == 0:
                 continue
             batch_x.append(self.cache.batch_x[cluster])
             batch_adj.append(self.cache.batch_adj[cluster])
-            batch_idx.append(np.where(batch_mask)[0])
-            batch_labels.append(y)
+            batch_mask.append(mask)
+            batch_y.append(y)
 
-        batch_data = tuple(zip(batch_x, batch_adj))
-
-        sequence = MiniBatchSequence(batch_data,
-                                     batch_labels,
-                                     sample_weight=batch_idx,
+        batch_inputs = tuple(zip(batch_x, batch_adj))
+        sequence = MiniBatchSequence(batch_inputs,
+                                     batch_y,
+                                     out_weight=batch_mask,
                                      device=self.device)
         return sequence
 
     def predict(self, index):
 
-        mask = gf.index_to_mask(index, self.graph.num_nodes)
-
+        node_mask = gf.index_to_mask(index, self.graph.num_nodes)
         orders_dict = {idx: order for order, idx in enumerate(index)}
-        batch_idx, orders = [], []
+        batch_mask, orders = [], []
         batch_x, batch_adj = [], []
         for cluster in range(self.cache.n_clusters):
             nodes = self.cache.cluster_member[cluster]
-            batch_mask = mask[nodes]
-            batch_nodes = np.asarray(nodes)[batch_mask]
+            mask = node_mask[nodes]
+            batch_nodes = np.asarray(nodes)[mask]
             if batch_nodes.size == 0:
                 continue
             batch_x.append(self.cache.batch_x[cluster])
             batch_adj.append(self.cache.batch_adj[cluster])
-            batch_idx.append(np.where(batch_mask)[0])
+            batch_mask.append(mask)
             orders.append([orders_dict[n] for n in batch_nodes])
 
         batch_data = tuple(zip(batch_x, batch_adj))
 
         logit = np.zeros((index.size, self.graph.num_node_classes),
                          dtype=self.floatx)
-        batch_data, batch_idx = gf.astensors(batch_data, batch_idx, device=self.device)
+        batch_data, batch_mask = gf.astensors(batch_data, batch_mask, device=self.device)
 
         model = self.model
-        with tf.device(self.device):
-            for order, inputs, idx in zip(orders, batch_data, batch_idx):
-                output = model.predict_step_on_batch(inputs, sample_weight=idx)
-                logit[order] = output
+        for order, inputs, mask in zip(orders, batch_data, batch_mask):
+            output = model.predict_step_on_batch(inputs, out_weight=mask)
+            logit[order] = output
 
         return logit

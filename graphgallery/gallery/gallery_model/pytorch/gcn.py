@@ -104,6 +104,6 @@ class GCN(GalleryModel):
         labels = self.graph.node_label[index]
         sequence = FullBatchSequence(x=[self.cache.X, self.cache.A],
                                      y=labels,
-                                     sample_weight=index,
+                                     out_weight=index,
                                      device=self.device)
         return sequence

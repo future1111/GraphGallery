@@ -32,15 +32,15 @@ warnings.filterwarnings(
 
 
 def unravel_batch(batch):
-    inputs = labels = sample_weight = None
+    inputs = labels = out_weight = None
     if isinstance(batch, (list, tuple)):
         inputs = batch[0]
         labels = batch[1]
         if len(batch) > 2:
-            sample_weight = batch[-1]
+            out_weight = batch[-1]
     else:
         inputs = batch
-    return inputs, labels, sample_weight
+    return inputs, labels, out_weight
 
 
 class GalleryModel(GraphModel):
@@ -393,10 +393,10 @@ class GalleryModel(GraphModel):
         model.reset_metrics()
 
         for batch in sequence:
-            inputs, labels, sample_weight = unravel_batch(batch)
+            inputs, labels, out_weight = unravel_batch(batch)
             results = model.train_step_on_batch(x=inputs,
                                                 y=labels,
-                                                sample_weight=sample_weight,
+                                                out_weight=out_weight,
                                                 device=sequence.device)
         return results
 
@@ -429,10 +429,10 @@ class GalleryModel(GraphModel):
         model.reset_metrics()
 
         for batch in sequence:
-            inputs, labels, sample_weight = unravel_batch(batch)
+            inputs, labels, out_weight = unravel_batch(batch)
             results = model.test_step_on_batch(x=inputs,
                                                y=labels,
-                                               sample_weight=sample_weight,
+                                               out_weight=out_weight,
                                                device=sequence.device)
         return results
 
@@ -481,9 +481,9 @@ class GalleryModel(GraphModel):
         logits = []
         model = self.model
         for batch in sequence:
-            inputs, labels, sample_weight = unravel_batch(batch)
+            inputs, labels, out_weight = unravel_batch(batch)
             logit = model.predict_step_on_batch(x=inputs,
-                                                sample_weight=sample_weight,
+                                                out_weight=out_weight,
                                                 device=self.device)
             logits.append(logit)
 

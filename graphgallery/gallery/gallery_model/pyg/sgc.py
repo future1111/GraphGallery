@@ -107,6 +107,6 @@ class SGC(GalleryModel):
         labels = self.graph.node_label[index]
         sequence = FullBatchSequence([self.cache.X, *self.cache.E],
                                      labels,
-                                     sample_weight=index,
+                                     out_weight=index,
                                      device=self.device)
         return sequence

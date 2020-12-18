@@ -83,19 +83,19 @@ class Registry(Iterable[Tuple[str, object]]):
                 "No object named '{}' found in '{}' registry!".format(name, self._name)
             )
         return ret
-    __getattr__ = get
+    # __getattr__ = get
 
     def items(self):
-        return self._obj_map.items()
+        return tuple(self._obj_map.items())
 
     def names(self):
-        return self._obj_map.keys()
+        return tuple(self._obj_map.keys())
 
     def objects(self):
-        return self._obj_map.values()
+        return tuple(self._obj_map.values())
 
     def __dir__(self):
-        return self._obj_map.keys()
+        return self.keys()
 
     def __add__(self, register):
         assert isinstance(register, Registry)

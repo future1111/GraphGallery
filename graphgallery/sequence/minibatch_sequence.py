@@ -12,7 +12,7 @@ class MiniBatchSequence(Sequence):
         self,
         x,
         y,
-        sample_weight=None,
+        out_weight=None,
         shuffle=False,
         batch_size=1,
         *args, **kwargs
@@ -22,15 +22,15 @@ class MiniBatchSequence(Sequence):
         self.n_batches = len(x)
         self.shuffle = shuffle
         self.indices = list(range(self.n_batches))
-        self.x, self.y, self.sample_weight = self.astensors(x, y, sample_weight)
         self.batch_size = batch_size
+        self.x, self.y, self.out_weight = self.astensors(x, y, out_weight)
 
     def __len__(self):
         return self.n_batches
 
     def __getitem__(self, index):
         idx = self.indices[index]
-        return self.x[idx], self.y[idx], self.sample_weight[idx]
+        return self.x[idx], self.y[idx], self.out_weight[idx]
 
     def on_epoch_end(self):
         if self.shuffle:
@@ -49,7 +49,7 @@ class SAGEMiniBatchSequence(Sequence):
         self,
         x,
         y=None,
-        sample_weight=None,
+        out_weight=None,
         n_samples=[5, 5],
         shuffle=False,
         batch_size=512,

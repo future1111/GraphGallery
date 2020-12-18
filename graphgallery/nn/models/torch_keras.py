@@ -30,7 +30,7 @@ class TorchKeras(nn.Module):
     def train_step_on_batch(self,
                             x,
                             y=None,
-                            sample_weight=None,
+                            out_weight=None,
                             device="cpu"):
         self.train()
         optimizer = self.optimizer
@@ -39,8 +39,8 @@ class TorchKeras(nn.Module):
         optimizer.zero_grad()
 
         out = self(*x if isinstance(x, (list, tuple)) else [x])
-        if sample_weight is not None:
-            out = out[sample_weight]
+        if out_weight is not None:
+            out = out[out_weight]
         loss = loss_fn(out, y)
         loss.backward()
         optimizer.step()
@@ -54,15 +54,15 @@ class TorchKeras(nn.Module):
     def test_step_on_batch(self,
                            x,
                            y=None,
-                           sample_weight=None,
+                           out_weight=None,
                            device="cpu"):
         self.eval()
         loss_fn = self.loss
         metrics = self.metrics
 
         out = self(*x if isinstance(x, (list, tuple)) else [x])
-        if sample_weight is not None:
-            out = out[sample_weight]
+        if out_weight is not None:
+            out = out[out_weight]
         loss = loss_fn(out, y)
         for metric in metrics:
             metric.update_state(y.cpu(), out.detach().cpu())
@@ -71,11 +71,11 @@ class TorchKeras(nn.Module):
         return dict(zip(self.metrics_names, results))
 
     @torch.no_grad()
-    def predict_step_on_batch(self, x, sample_weight=None, device="cpu"):
+    def predict_step_on_batch(self, x, out_weight=None, device="cpu"):
         self.eval()
         out = self(*x if isinstance(x, (list, tuple)) else [x])
-        if sample_weight is not None:
-            out = out[sample_weight]
+        if out_weight is not None:
+            out = out[out_weight]
         return out.cpu().detach()
 
     def build(self, inputs):
