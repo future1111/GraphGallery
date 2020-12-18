@@ -23,12 +23,20 @@ from graphgallery.data import BaseGraph
 from graphgallery.utils.raise_error import raise_if_kwargs
 from graphgallery.gallery import GraphModel
 
+# TensorFlow 2.1.x
 # Ignora warnings:
 #     UserWarning: Converting sparse IndexedSlices to a dense Tensor of unknown shape. This may consume a large amount of memory.
 #     This is caused by `tf.gather` and it will be solved in future tensorflow version.
 warnings.filterwarnings(
     'ignore',
     '.*Converting sparse IndexedSlices to a dense Tensor of unknown shape.*')
+
+# TensorFlow 2.4.0
+# Ignora warnings:
+#     UserWarning: Converting sparse IndexedSlices(IndexedSlices(indices=...) to a dense Tensor of unknown shape.
+#     This may consume a large amount of memory.
+warnings.filterwarnings(
+    'ignore')
 
 
 def unravel_batch(batch):
