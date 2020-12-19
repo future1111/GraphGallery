@@ -36,11 +36,8 @@ class Model:
         if seed:
             gf.random_seed(seed, _backend)
 
-        if name is None:
-            name = self.__class__.__name__
-
         self.seed = seed
-        self.name = name
+        self.name = name or self.__class__.__name__
         self.graph = graph.copy()
         self.device = gf.device(device, _backend)
         self.backend = _backend

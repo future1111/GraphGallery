@@ -5,8 +5,7 @@ from .model_zoos import (TensorFlow, PyTorch, PyG,
                          DGL_PyTorch, DGL_TensorFlow,
                          Common,
                          MAPPING)
-from .sklearn_model.sklearn_model import SklearnModel
-from .sklearn_model import *
+from .common import *
 
 import sys
 import importlib
