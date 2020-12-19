@@ -21,8 +21,8 @@ splits = data.split_nodes()
 graphgallery.set_backend("pyg")
 
 from graphgallery.gallery import GAT
-model = GAT(graph, attr_transform="normalize_attr", device="gpu", seed=42)
-model.build()
-his = model.train(splits.train_nodes, splits.val_nodes, verbose=1, epochs=200)
-results = model.test(splits.test_nodes) 
+trainer = GAT(graph, attr_transform="normalize_attr", device="gpu", seed=42)
+trainer.build()
+his = trainer.train(splits.train_nodes, splits.val_nodes, verbose=1, epochs=200)
+results = trainer.test(splits.test_nodes) 
 print(f'Test loss {results.loss:.5}, Test accuracy {results.accuracy:.2%}')

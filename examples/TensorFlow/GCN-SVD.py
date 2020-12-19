@@ -20,8 +20,8 @@ graph = data.graph
 splits = data.split_nodes(random_state=15)
 
 from graphgallery.gallery import GCN
-model = GCN(graph, graph_transform="SVD", device="gpu", seed=123)
-model.build()
-history = model.train(splits.train_nodes, splits.val_nodes, verbose=1, epochs=100)
-results = model.test(splits.test_nodes)
+trainer = GCN(graph, graph_transform="SVD", device="gpu", seed=123)
+trainer.build()
+history = trainer.train(splits.train_nodes, splits.val_nodes, verbose=1, epochs=100)
+results = trainer.test(splits.test_nodes)
 print(f'Test loss {results.loss:.5}, Test accuracy {results.accuracy:.2%}')

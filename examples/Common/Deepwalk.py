@@ -19,8 +19,8 @@ graph = data.graph
 splits = data.split_nodes()
 
 from graphgallery.gallery import Deepwalk
-model = Deepwalk(graph)
-model.build()
-his = model.train(splits.train_nodes)
-results = model.test(splits.test_nodes) 
+trainer = Deepwalk(graph)
+trainer.build()
+his = trainer.train(splits.train_nodes)
+results = trainer.test(splits.test_nodes) 
 print(f'Test accuracy {results.accuracy:.2%}')
