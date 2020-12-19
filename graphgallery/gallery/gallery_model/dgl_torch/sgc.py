@@ -104,11 +104,10 @@ class SGC(GalleryModel):
                             use_bias=use_bias).to(self.device)
 
     def train_sequence(self, index):
-
         labels = self.graph.node_label[index]
-        sequence = FullBatchSequence(
-            [self.cache.X, self.cache.G, index],
-            labels,
-            device=self.device,
-            escape=type(self.cache.G))
+        sequence = FullBatchSequence([self.cache.X, self.cache.G],
+                                     labels,
+                                     out_weight=index,
+                                     device=self.device,
+                                     escape=type(self.cache.G))
         return sequence

@@ -18,8 +18,16 @@ else:
 
 class TFKeras(Model):
     """High-level encapsulation of Tensorflow Keras Model."""
+    _use_tfn = False
 
-    @tf.function(experimental_relax_shapes=True)
+    def use_tfn(self):
+        assert not self._use_tfn, "'tf.function' has been used."
+        self.train_step_on_batch = tf.function(self.train_step_on_batch, experimental_relax_shapes=True)
+        self.test_step_on_batch = tf.function(self.test_step_on_batch, experimental_relax_shapes=True)
+        self.predict_step_on_batch = tf.function(self.predict_step_on_batch, experimental_relax_shapes=True)
+        self._use_tfn = True
+
+    # @tf.function(experimental_relax_shapes=True)
     def train_step_on_batch(self,
                             x,
                             y=None,
@@ -50,7 +58,7 @@ class TFKeras(Model):
             results = [loss] + [metric.result() for metric in getattr(metrics, "metrics", metrics)]
             return dict(zip(self.metrics_names, results))
 
-    @tf.function(experimental_relax_shapes=True)
+    # @tf.function(experimental_relax_shapes=True)
     def test_step_on_batch(self,
                            x,
                            y=None,
@@ -72,7 +80,7 @@ class TFKeras(Model):
             results = [loss] + [metric.result() for metric in getattr(metrics, "metrics", metrics)]
             return dict(zip(self.metrics_names, results))
 
-    @tf.function(experimental_relax_shapes=True)
+    # @tf.function(experimental_relax_shapes=True)
     def predict_step_on_batch(self, x, out_weight=None,
                               return_logits=True,
                               device="CPU"):

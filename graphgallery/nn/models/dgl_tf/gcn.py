@@ -31,14 +31,12 @@ class GCN(Model):
         self.dropout = layers.Dropout(dropout)
         self.compile(loss=SparseCategoricalCrossentropy(from_logits=True),
                      optimizer=Adam(lr=lr), metrics=['accuracy'])
-        self.weight_decay = weight_decay
-        self.metric = SparseCategoricalAccuracy()
 
     def call(self, inputs):
-        h, g, idx = inputs
+        h, g = inputs
         for layer in self.convs[:-1]:
             h = layer(g, h)
             h = self.dropout(h)
         h = self.convs[-1](g, h)
 
-        return tf.gather(h, idx)
+        return h

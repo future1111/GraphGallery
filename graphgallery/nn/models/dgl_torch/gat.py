@@ -55,11 +55,10 @@ class GAT(TorchKeras):
                      optimizer=optim.Adam(paras, lr=lr),
                      metrics=[Accuracy()])
 
-    def forward(self, inputs):
-        x, g, idx = inputs
+    def forward(self, x, g):
         for layer in self.layers[:-1]:
             x = layer(g, x).flatten(1)
             x = self.dropout(x)
 
         x = self.layers[-1](g, x).mean(1)
-        return x[idx]
+        return x

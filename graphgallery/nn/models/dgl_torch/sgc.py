@@ -40,7 +40,6 @@ class SGC(TorchKeras):
                                           weight_decay=weight_decay),
                      metrics=[Accuracy()])
 
-    def forward(self, inputs):
-        x, g, idx = inputs
+    def forward(self, x, g):
         x = self.conv(g, x)
-        return x[idx]
+        return x

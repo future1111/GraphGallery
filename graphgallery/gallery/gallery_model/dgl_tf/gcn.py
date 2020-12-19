@@ -101,56 +101,11 @@ class GCN(GalleryModel):
                                 lr=lr,
                                 use_bias=use_bias)
 
-    def train_step(self, sequence):
-
-        model = self.model
-        weight_decay = getattr(model, "weight_decay", 0.)
-        loss_fn = model.loss
-        optimizer = model.optimizer
-        metric = model.metric
-        model.reset_metrics()
-        metric.reset_states()
-
-        with tf.device(self.device):
-            with tf.GradientTape() as tape:
-                for inputs, labels in sequence:
-                    logits = model(inputs)
-                    metric.update_state(labels, logits)
-                    loss = loss_fn(labels, logits)
-                    for weight in model.trainable_weights:
-                        loss += weight_decay * tf.nn.l2_loss(weight)
-                    grads = tape.gradient(loss, model.trainable_weights)
-                    optimizer.apply_gradients(
-                        zip(grads, model.trainable_weights))
-
-        # TODO: multiple metrics
-        return gf.BunchDict(loss=loss.numpy().item(), accuracy=metric.result().numpy().item())
-
-    def test_step(self, sequence):
-
-        model = self.model
-        weight_decay = getattr(model, "weight_decay", 0.)
-        loss_fn = model.loss
-        metric = model.metric
-        model.reset_metrics()
-        metric.reset_states()
-
-        with tf.device(self.device):
-            for inputs, labels in sequence:
-                logits = model(inputs, training=False)
-                metric.update_state(labels, logits)
-                loss = loss_fn(labels, logits)
-                for weight in model.trainable_weights:
-                    loss += weight_decay * tf.nn.l2_loss(weight)
-
-        # TODO: multiple metrics
-        return gf.BunchDict(loss=loss.numpy().item(), accuracy=metric.result().numpy().item())
-
     def train_sequence(self, index):
         labels = self.graph.node_label[index]
-        sequence = FullBatchSequence(
-            [self.cache.X, self.cache.G, index],
-            labels,
-            device=self.device,
-            escape=type(self.cache.G))
+        sequence = FullBatchSequence([self.cache.X, self.cache.G],
+                                     labels,
+                                     out_weight=index,
+                                     device=self.device,
+                                     escape=type(self.cache.G))
         return sequence

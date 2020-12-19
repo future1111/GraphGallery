@@ -43,12 +43,11 @@ class GCN(TorchKeras):
                                           weight_decay=weight_decay),
                      metrics=[Accuracy()])
 
-    def forward(self, inputs):
-        x, g, indx = inputs
+    def forward(self, x, g):
 
         for i, layer in enumerate(self.layers):
             if i != 0:
                 x = self.dropout(x)
             x = layer(g, x)
 
-        return x[indx]
+        return x
