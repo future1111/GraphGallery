@@ -56,17 +56,11 @@ class GraphModel(Model):
         self.transform = cache_transform(kwargs)
         super().__init__(graph, device=device, seed=seed, name=name, **kwargs)
 
-        self.train_data = None
-        self.val_data = None
-        self.test_data = None
-        self.predict_data = None
         self.backup = None
 
         self._model = None
         self._custom_objects = None  # used for save/load TF model
 
-        # checkpoint path
-        # use `uuid` to avoid duplication
         self.ckpt_path = osp.join(os.getcwd(), f"{self.name}_checkpoint_{uuid.uuid1().hex[:6]}{gg.file_ext()}")
 
     def save(self,
@@ -125,23 +119,3 @@ class GraphModel(Model):
                 saver.load_tf_weights(self.model, path)
             else:
                 saver.load_torch_weights(self.model, path)
-
-    @property
-    def model(self):
-        return self._model
-
-    @model.setter
-    def model(self, m):
-        # Back up
-        if isinstance(m, tf.keras.Model) and m.weights:
-            self.backup = tf.identity_n(m.weights)
-        # TODO assert m is None or isinstance(m, tf.keras.Model) or torch.nn.Module
-        self._model = m
-
-    def close(self):
-        """Close the session of model and empty cache."""
-        gg.empty_cache()
-        self._model = None
-
-    def __call__(self, *args, **kwargs):
-        return self._model(*args, **kwargs)

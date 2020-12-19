@@ -1,8 +1,10 @@
 import warnings
 import tensorflow as tf
 from tensorflow.keras import Model
-from graphgallery.utils import merge_as_list
 from tensorflow.keras.activations import softmax
+
+import graphgallery as gg
+from graphgallery.utils import merge_as_list
 from graphgallery import functional as gf
 from graphgallery.functional.tensor.tensorflow import mask_or_gather
 
@@ -90,6 +92,50 @@ class TFKeras(Model):
             if not return_logits:
                 out = softmax(out)
         return out
+
+    def save_weights(self, filepath, overwrite=True,
+                     save_format=None, **kwargs):
+        ext = gg.file_ext()
+
+        if not filepath.endswith(ext):
+            filepath = filepath + ext
+        try:
+            super().save_weights(filepath, overwrite=overwrite,
+                                 save_format=save_format, **kwargs)
+        except ValueError as e:
+            super().save_weights(filepath[:-len(ext)], overwrite=overwrite,
+                                 save_format=save_format, **kwargs)
+
+    def load_weights(self, filepath):
+        ext = gg.file_ext()
+
+        if not filepath.endswith(ext):
+            filepath = filepath + ext
+        try:
+            super().load_weights(filepath)
+        except KeyError as e:
+            super().load_weights(filepath[: - len(ext)])
+
+    def save(self, filepath, overwrite=True, save_format=None, **kwargs):
+
+        ext = gg.file_ext()
+        if not filepath.endswith(ext):
+            filepath = filepath + ext
+
+        super().save(filepath, overwrite=overwrite, save_format=save_format, **kwargs)
+
+    @classmethod
+    def load_model(filepath, custom_objects=None, **kwargs):
+        ext = gg.file_ext()
+
+        if not filepath.endswith(ext):
+            filepath = filepath + ext
+
+        if custom_objects:
+            custom_objects['TFKeras'] = TFKeras
+
+        return tf.keras.models.load_model(filepath,
+                                          custom_objects=custom_objects, **kwargs)
 
     @property
     def custom_objects(self):

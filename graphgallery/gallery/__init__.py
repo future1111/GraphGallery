@@ -1,5 +1,6 @@
 from .model import Model
 from .graph_model import GraphModel
+from .trainer import Trainer
 from .gallery_model.gallery_model import GalleryModel
 from .model_zoos import (TensorFlow, PyTorch, PyG,
                          DGL_PyTorch, DGL_TensorFlow,
@@ -13,7 +14,8 @@ from typing import Tuple
 from graphgallery import backend
 
 __all__ = ["Model", "enabled_models",
-           "is_enabled", "GraphModel",
+           "is_enabled", "Trainer",
+           "get_registry",
            "GalleryModel", "SklearnModel"]
 
 

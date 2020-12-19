@@ -1,12 +1,13 @@
 import torch
 import numpy as np
 import torch.nn as nn
+import os.path as osp
 
 from torch import optim
 from torch.autograd import Variable
 
 from collections import OrderedDict
-from graphgallery.utils import saver
+import graphgallery as gg
 
 
 class TorchKeras(nn.Module):
@@ -108,18 +109,48 @@ class TorchKeras(nn.Module):
                      overwrite=True,
                      save_format=None,
                      **kwargs):
-        saver.save_torch_weights(self,
-                                 filepath,
-                                 overwrite=overwrite,
-                                 save_format=save_format,
-                                 **kwargs)
+        ext = gg.file_ext()
+
+        if not filepath.endswith(ext):
+            filepath = filepath + ext
+
+        if not overwrite and osp.isfile(filepath):
+            proceed = gg.utils.ask_to_proceed_with_overwrite(filepath)
+            if not proceed:
+                return
+
+        torch.save(self.state_dict(), filepath)
+
+    def load_weights(self, filepath):
+        ext = gg.file_ext()
+
+        if not filepath.endswith(ext):
+            filepath = filepath + ext
+
+        checkpoint = torch.load(filepath)
+        self.load_state_dict(checkpoint)
 
     def save(self, filepath, overwrite=True, save_format=None, **kwargs):
-        saver.save_torch_model(self,
-                               filepath,
-                               overwrite=overwrite,
-                               save_format=save_format,
-                               **kwargs)
+        ext = gg.file_ext()
+
+        if not filepath.endswith(ext):
+            filepath = filepath + ext
+
+        if not overwrite and osp.isfile(filepath):
+            proceed = gg.utils.ask_to_proceed_with_overwrite(filepath)
+            if not proceed:
+                return
+
+        torch.save(self, filepath)
+
+    @classmethod
+    def load(filepath):
+        ext = gg.file_ext()
+
+        if not filepath.endswith(ext):
+            filepath = filepath + ext
+
+        return torch.load(filepath)
 
     def reset_parameters(self):
         for layer in self.layers:

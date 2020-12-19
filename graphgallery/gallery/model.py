@@ -1,9 +1,3 @@
-import random
-import torch
-
-import numpy as np
-import tensorflow as tf
-import scipy.sparse as sp
 import graphgallery as gg
 from graphgallery import functional as gf
 
@@ -11,7 +5,6 @@ from graphgallery import functional as gf
 class Model:
     def __init__(self, graph, device="cpu", seed=None, name=None, **kwargs):
         """
-
         Parameters:
         ----------
         graph: Graph or MultiGraph.
@@ -22,7 +15,7 @@ class Model:
             & `random.seed` to create a reproducible sequence of tensors
             across multiple calls.
         name: string. optional
-            Specified name for the model. (default: :str: `class.__name__`)
+            Specified name for the model. (default: :str: `class name`)
         kwargs: other custom keyword arguments. 
         """
         if not isinstance(graph, gg.data.BaseGraph):
@@ -47,6 +40,10 @@ class Model:
         self.intx = gg.intx()
         self.boolx = gg.boolx()
         self._cache = gf.BunchDict()
+        self.transform = gf.BunchDict()
+
+        self.cfg = None
+        self._model = None
 
     @property
     def cache(self):
