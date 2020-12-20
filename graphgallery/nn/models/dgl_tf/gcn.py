@@ -1,15 +1,16 @@
 import tensorflow as tf
 
-from tensorflow.keras import layers, Model
+from tensorflow.keras import layers
 from tensorflow.keras.losses import SparseCategoricalCrossentropy
 from tensorflow.keras.metrics import SparseCategoricalAccuracy
 from tensorflow.keras.optimizers import Adam
 
 from dgl.nn.tensorflow import GraphConv
-from tensorflow.keras.activations import get
+from tensorflow.keras import activations
+from graphgallery.nn.models import TFKeras
 
 
-class GCN(Model):
+class GCN(TFKeras):
     def __init__(self, in_channels, out_channels,
                  hids=[16],
                  acts=['relu'],
@@ -22,7 +23,7 @@ class GCN(Model):
         inc = in_channels
         for hid, act in zip(hids, acts):
             layer = GraphConv(inc, hid, bias=use_bias,
-                              activation=get(activation))
+                              activation=activations.get(act))
             self.convs.append(layer)
             inc = hid
 

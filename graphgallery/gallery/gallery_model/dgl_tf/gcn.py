@@ -1,16 +1,15 @@
 import tensorflow as tf
 
-from graphgallery import functional as gf
-from graphgallery.gallery import GalleryModel
 from graphgallery.sequence import FullBatchSequence
-
-from graphgallery.nn.models.dgl_tf import GCN as dglGCN
+from graphgallery import functional as gf
+from graphgallery.gallery import Trainer
+from graphgallery.nn.models import get_model
 
 from graphgallery.gallery import DGL_TensorFlow
 
 
 @DGL_TensorFlow.register()
-class GCN(GalleryModel):
+class GCN(Trainer):
     """
         Implementation of Graph Convolutional Networks (GCN). 
         `Semi-Supervised Classification with Graph Convolutional Networks 
@@ -24,7 +23,9 @@ class GCN(GalleryModel):
                      adj_transform="add_selfloops",
                      attr_transform=None,
                      graph_transform=None):
-
+        graph = gf.get(graph_transform)(self.graph)
+        adj_matrix = gf.get(adj_transform)(graph.adj_matrix)
+        node_attr = gf.get(attr_transform)(graph.node_attr)
         X, G = gf.astensors(node_attr, adj_matrix, device=self.device)
 
         # ``G`` and ``X`` are cached for later use
