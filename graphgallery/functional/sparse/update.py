@@ -2,7 +2,7 @@ import warnings
 import numpy as np
 import scipy.sparse as sp
 from ..edge_level import asedge
-from ..attr_matrix import flip_attr
+from ..dense import flip_attr
 
 __all__ = ["flip_adj", "add_edge", "remove_edge"]
 

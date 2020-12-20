@@ -100,8 +100,8 @@ class GaussionConvolution_F(Layer):
 
         h = x @ self.kernel
 
-        mean = acts.elu(h)
-        var = acts.relu(h)
+        mean = activations.elu(h)
+        var = activations.relu(h)
 
         attention = tf.exp(-self.gamma * var)
         mean = tf.sparse.sparse_dense_matmul(adj[0], mean * attention)
@@ -243,8 +243,8 @@ class GaussionConvolution_D(Layer):
         mean, var, *adj = inputs
 #         assert len(adj) == 2
 
-        mean = acts.elu(mean @ self.kernel_mean)
-        var = acts.relu(var @ self.kernel_var)
+        mean = activations.elu(mean @ self.kernel_mean)
+        var = activations.relu(var @ self.kernel_var)
 
         attention = tf.math.exp(-self.gamma * var)
         mean = tf.sparse.sparse_dense_matmul(adj[0], mean * attention)

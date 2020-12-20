@@ -13,7 +13,7 @@ import graphgallery as gg
 from graphgallery import functional as gf
 
 __all__ = ['asarray', 'index_to_mask',
-           'repeat', 'get_length', 'onehot',
+           'repeat', 'get_length',
            'nx_graph_to_sparse_adj']
 
 
@@ -79,15 +79,6 @@ def get_length(obj: Any) -> int:
     else:
         length = 1
     return length
-
-
-def onehot(label):
-    """Get the one-hot like label of nodes."""
-    label = np.asarray(label, dtype=np.int32)
-    if label.ndim == 1:
-        return np.eye(label.max() + 1, dtype=label.dtype)[label]
-    else:
-        raise ValueError(f"label must be a 1D array, but got {label.ndim}D array.")
 
 
 def nx_graph_to_sparse_adj(graph):
