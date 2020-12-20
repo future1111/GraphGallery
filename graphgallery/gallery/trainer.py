@@ -58,7 +58,11 @@ def default_cfg(model):
     cfg.boolx = model.boolx
 
     cfg.process = gg.CfgNode()
-    cfg.process.transform = gg.CfgNode()
+    cfg.process.graph_transform = None
+    cfg.process.adj_transform = None
+    cfg.process.attr_transform = None
+    cfg.process.label_transform = None
+
     cfg.model = gg.CfgNode()
 
     cfg.train = gg.CfgNode()
@@ -121,28 +125,33 @@ class Trainer(Model):
     def setup(self):
         self.cfg = default_cfg(self)
 
-    def process(self, adj_transform=None,
-                attr_transform=None,
-                graph_transform=None,
-                label_transform=None,
-                **kwargs):
+    def process(self, **kwargs):
 
         cfg = self.cfg.process
-        transform = cfg.transform
-        transform.graph_transform = graph_transform
-        transform.adj_transform = adj_transform
-        transform.attr_transform = attr_transform
-        transform.label_transform = label_transform
-
-        self.transform.graph_transform = gf.get(graph_transform)
-        self.transform.adj_transform = gf.get(adj_transform)
-        self.transform.attr_transform = gf.get(attr_transform)
-        self.transform.label_transform = gf.get(label_transform)
-
+        _, kwargs = gf.wrapper(self.process_step)(**kwargs)
         cfg.merge_from_dict(kwargs)
 
+        for k, v in cfg.items():
+            if k.endswith("transform"):
+                setattr(self.transform, k, gf.get(v))
+        return self
+
+    def process_step(self, *args, **kwargs):
+        raise NotImplementedError
+
     def build(self, **kwargs):
-        self.cfg.merge_from_dict(kwargs)
+        if self.backend == "tensorflow":
+            with tf.device(self.device):
+                self.model, kwargs = gf.wrapper(self.builder)(**kwargs)
+        else:
+            model, kwargs = gf.wrapper(self.builder)(**kwargs)
+            self.model = model.to(self.device)
+
+        self.cfg.model.merge_from_dict(kwargs)
+        return self
+
+    def builder(self, *args, **kwargs):
+        raise NotImplementedError
 
     def train(self, train_data, val_data=None, **kwargs):
         cache = self.cache
@@ -330,7 +339,8 @@ class Trainer(Model):
         logits = self.predict_step(predict_data)
         if not return_logits:
             logits = softmax(logits)
-        return logits
+
+        return logits.squeeze()
 
     def predict_step(self, sequence):
         logits = []
@@ -345,7 +355,6 @@ class Trainer(Model):
         return np.vstack(logits)
 
     def train_sequence(self, inputs, **kwargs):
-
         raise NotImplementedError
 
     def test_sequence(self, inputs, **kwargs):
@@ -362,8 +371,7 @@ class Trainer(Model):
 
     def reset_weights(self):
         # TODO: add pytorch support
-        """reset the model to the first time.
-        """
+        """reset the model to the first time."""
         model = self.model
         if self.backup is None:
             raise RuntimeError(

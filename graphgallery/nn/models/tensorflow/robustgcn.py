@@ -13,8 +13,8 @@ from graphgallery.nn.models import TFKeras
 class RobustGCN(TFKeras):
 
     def __init__(self, in_channels, out_channels,
-                 hiddens=[64],
-                 activations=['relu'],
+                 hids=[64],
+                 acts=['relu'],
                  dropout=0.5,
                  weight_decay=5e-4,
                  lr=0.01, kl=5e-4, gamma=1.,
@@ -29,10 +29,10 @@ class RobustGCN(TFKeras):
                      name='adj_matrix_2')]
 
         h = x
-        if hiddens:
-            mean, var = GaussionConvolution_F(hiddens[0], gamma=gamma,
+        if hids:
+            mean, var = GaussionConvolution_F(hids[0], gamma=gamma,
                                               use_bias=use_bias,
-                                              activation=activations[0],
+                                              activation=acts[0],
                                               kernel_regularizer=regularizers.l2(weight_decay))([h, *adj])
             if kl:
                 KL_divergence = 0.5 * \
@@ -44,10 +44,10 @@ class RobustGCN(TFKeras):
                 kl_loss = kl * KL_divergence
 
         # additional layers (usually unnecessay)
-        for hidden, activation in zip(hiddens[1:], activations[1:]):
+        for hid, act in zip(hids[1:], acts[1:]):
 
             mean, var = GaussionConvolution_D(
-                hidden, gamma=gamma, use_bias=use_bias, activation=activation)([mean, var, *adj])
+                hid, gamma=gamma, use_bias=use_bias, activation=act)([mean, var, *adj])
             mean = Dropout(rate=dropout)(mean)
             var = Dropout(rate=dropout)(var)
 
@@ -60,5 +60,5 @@ class RobustGCN(TFKeras):
         self.compile(loss=SparseCategoricalCrossentropy(from_logits=True),
                      optimizer=Adam(lr=lr), metrics=['accuracy'])
 
-        if hiddens and kl:
+        if hids and kl:
             self.add_loss(kl_loss)

@@ -12,7 +12,7 @@ from graphgallery import floatx
 class DAGNN(TFKeras):
 
     def __init__(self, in_channels, out_channels,
-                 hiddens=[64], activations=['relu'],
+                 hids=[64], acts=['relu'],
                  dropout=0.5, weight_decay=5e-3,
                  lr=0.01, use_bias=False, K=10):
 
@@ -22,12 +22,12 @@ class DAGNN(TFKeras):
                     sparse=True, name='adj_matrix')
 
         h = x
-        for hidden, activation in zip(hiddens, activations):
-            h = Dense(hidden, use_bias=use_bias, activation=activation,
+        for hid, act in zip(hids, acts):
+            h = Dense(hid, use_bias=use_bias, activation=act,
                       kernel_regularizer=regularizers.l2(weight_decay))(h)
             h = Dropout(dropout)(h)
 
-        h = Dense(out_channels, use_bias=use_bias, activation=activations[-1],
+        h = Dense(out_channels, use_bias=use_bias, activation=acts[-1],
                   kernel_regularizer=regularizers.l2(weight_decay))(h)
         h = Dropout(dropout)(h)
 

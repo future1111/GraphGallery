@@ -14,8 +14,8 @@ class SGC(TorchKeras):
     def __init__(self,
                  in_channels,
                  out_channels,
-                 hiddens=[],
-                 activations=[],
+                 hids=[],
+                 acts=[],
                  K=2,
                  dropout=0.5,
                  weight_decay=5e-5,
@@ -23,9 +23,9 @@ class SGC(TorchKeras):
                  use_bias=False):
         super().__init__()
 
-        if hiddens or activations:
+        if hids or acts:
             raise RuntimeError(
-                f"Arguments 'hiddens' and 'activations' are not supported to use in SGC (PyG backend)."
+                f"Arguments 'hids' and 'acts' are not supported to use in SGC (PyG backend)."
             )
 
         conv = SGConv(in_channels,

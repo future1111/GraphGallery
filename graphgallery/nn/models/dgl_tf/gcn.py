@@ -11,8 +11,8 @@ from tensorflow.keras.activations import get
 
 class GCN(Model):
     def __init__(self, in_channels, out_channels,
-                 hiddens=[16],
-                 activations=['relu'],
+                 hids=[16],
+                 acts=['relu'],
                  dropout=0.5,
                  weight_decay=5e-4,
                  lr=0.01, use_bias=True):
@@ -20,11 +20,11 @@ class GCN(Model):
         super().__init__()
         self.convs = []
         inc = in_channels
-        for hidden, activation in zip(hiddens, activations):
-            layer = GraphConv(inc, hidden, bias=use_bias,
+        for hid, act in zip(hids, acts):
+            layer = GraphConv(inc, hid, bias=use_bias,
                               activation=get(activation))
             self.convs.append(layer)
-            inc = hidden
+            inc = hid
 
         layer = GraphConv(inc, out_channels, bias=use_bias)
         self.convs.append(layer)

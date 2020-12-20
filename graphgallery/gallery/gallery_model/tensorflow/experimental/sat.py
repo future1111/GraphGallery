@@ -111,8 +111,8 @@ class SAT(GalleryModel):
 
     @gf.equal()
     def build(self,
-              hiddens=[32],
-              activations=['relu'],
+              hids=[32],
+              acts=['relu'],
               dropout=0.5,
               weight_decay=5e-4,
               lr=0.01,
@@ -132,11 +132,11 @@ class SAT(GalleryModel):
                         name='adj_matrix')
 
             h = x
-            for hid, activation in zip(hiddens, activations):
+            for hid, act in zip(hids, acts):
                 h = DenseConvolution(
                     hid,
                     use_bias=use_bias,
-                    activation=activation,
+                    activation=act,
                     kernel_regularizer=regularizers.l2(weight_decay))([h, adj])
 
                 h = Dropout(rate=dropout)(h)

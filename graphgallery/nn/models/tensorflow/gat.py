@@ -12,8 +12,8 @@ from graphgallery.nn.models import TFKeras
 class GAT(TFKeras):
 
     def __init__(self, in_channels,
-                 out_channels, hiddens=[16], n_heads=[8],
-                 activations=['elu'], dropout=0.6,
+                 out_channels, hids=[16], n_heads=[8],
+                 acts=['elu'], dropout=0.6,
                  weight_decay=5e-4,
                  lr=0.01, use_bias=True):
 
@@ -23,11 +23,11 @@ class GAT(TFKeras):
                     sparse=True, name='adj_matrix')
 
         h = x
-        for hidden, n_head, activation in zip(hiddens, n_heads, activations):
-            h = GraphAttention(hidden, attn_heads=n_head,
+        for hid, n_head, activation in zip(hids, n_heads, acts):
+            h = GraphAttention(hid, attn_heads=n_head,
                                reduction='concat',
                                use_bias=use_bias,
-                               activation=activation,
+                               activation=act,
                                kernel_regularizer=regularizers.l2(weight_decay),
                                attn_kernel_regularizer=regularizers.l2(
                                    weight_decay),

@@ -12,8 +12,8 @@ from graphgallery import floatx
 class DenseGCN(TFKeras):
 
     def __init__(self, in_channels, out_channels,
-                 hiddens=[16],
-                 activations=['relu'],
+                 hids=[16],
+                 acts=['relu'],
                  dropout=0.5,
                  weight_decay=5e-4,
                  lr=0.01, use_bias=False):
@@ -24,9 +24,9 @@ class DenseGCN(TFKeras):
                     sparse=False, name='adj_matrix')
 
         h = x
-        for hidden, activation in zip(hiddens, activations):
-            h = DenseConvolution(hidden, use_bias=use_bias,
-                                 activation=activation,
+        for hid, act in zip(hids, acts):
+            h = DenseConvolution(hid, use_bias=use_bias,
+                                 activation=act,
                                  kernel_regularizer=regularizers.l2(weight_decay))([h, adj])
 
             h = Dropout(rate=dropout)(h)

@@ -81,8 +81,8 @@ class GCN(GalleryModel):
 
     @gf.equal()
     def build(self,
-              hiddens=[16],
-              activations=['relu'],
+              hids=[16],
+              acts=['relu'],
               dropout=0.5,
               weight_decay=5e-4,
               lr=0.01,
@@ -90,8 +90,8 @@ class GCN(GalleryModel):
 
         self.model = dglGCN(self.graph.num_node_attrs,
                             self.graph.num_node_classes,
-                            hiddens=hiddens,
-                            activations=activations,
+                            hids=hids,
+                            acts=acts,
                             dropout=dropout,
                             weight_decay=weight_decay,
                             lr=lr,

@@ -112,7 +112,7 @@ class GalleryModel(GraphModel):
             The number of hidden units of model. Note: the last hidden unit (`num_node_classes`)
             aren't necessary to specified and it will be automatically added in the last
             layer.
-        activations: `list` of string or string
+        acts: `list` of string or string
             The activation function of model. Note: the last activation function (`softmax`)
             aren't necessary to specified and it will be automatically specified in the
             final output.

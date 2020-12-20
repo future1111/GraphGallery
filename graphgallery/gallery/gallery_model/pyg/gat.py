@@ -79,9 +79,9 @@ class GAT(GalleryModel):
     # use decorator to make sure all list arguments have the same length
     @gf.equal(include=["n_heads"])
     def build(self,
-              hiddens=[8],
+              hids=[8],
               n_heads=[8],
-              activations=['elu'],
+              acts=['elu'],
               dropout=0.6,
               weight_decay=5e-4,
               lr=0.01,
@@ -89,9 +89,9 @@ class GAT(GalleryModel):
 
         self.model = pygGAT(self.graph.num_node_attrs,
                             self.graph.num_node_classes,
-                            hiddens=hiddens,
+                            hids=hids,
                             n_heads=n_heads,
-                            activations=activations,
+                            acts=acts,
                             dropout=dropout,
                             weight_decay=weight_decay,
                             lr=lr,

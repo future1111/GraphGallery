@@ -45,8 +45,8 @@ def set_backend_dict():
     global _BACKEND_DICT
     _BACKEND_DICT = {}
     for bkd in _ALL_BACKENDS:
-        for act in bkd.alias:
-            _BACKEND_DICT[act] = bkd
+        for name in bkd.alias:
+            _BACKEND_DICT[name] = bkd
 
 
 ##### Types ######

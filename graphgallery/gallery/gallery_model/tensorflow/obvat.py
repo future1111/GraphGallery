@@ -91,8 +91,8 @@ class OBVAT(GalleryModel):
     # use decorator to make sure all list arguments have the same length
     @gf.equal()
     def build(self,
-              hiddens=[16],
-              activations=['relu'],
+              hids=[16],
+              acts=['relu'],
               dropout=0.5,
               weight_decay=5e-4,
               use_bias=False,
@@ -111,11 +111,11 @@ class OBVAT(GalleryModel):
                         name='adj_matrix')
 
             GCN_layers = []
-            for hidden, activation in zip(hiddens, activations):
+            for hid, act in zip(hids, acts):
                 GCN_layers.append(
                     GraphConvolution(
-                        hidden,
-                        activation=activation,
+                        hid,
+                        activation=act,
                         use_bias=use_bias,
                         kernel_regularizer=regularizers.l2(weight_decay)))
 

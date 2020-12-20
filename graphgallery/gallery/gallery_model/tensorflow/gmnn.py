@@ -93,8 +93,8 @@ class GMNN(GalleryModel):
     # use decorator to make sure all list arguments have the same length
     @ gf.equal()
     def build(self,
-              hiddens=[16],
-              activations=['relu'],
+              hids=[16],
+              acts=['relu'],
               dropout=0.6,
               weight_decay=5e-4,
               lr=0.05,
@@ -114,11 +114,11 @@ class GMNN(GalleryModel):
 
             def build_GCN(x):
                 h = x
-                for hidden, activation in zip(hiddens, activations):
+                for hid, act in zip(hids, acts):
                     h = GraphConvolution(
-                        hidden,
+                        hid,
                         use_bias=use_bias,
-                        activation=activation,
+                        activation=act,
                         kernel_regularizer=regularizers.l2(weight_decay))(
                             [h, adj])
                     h = Dropout(rate=dropout)(h)

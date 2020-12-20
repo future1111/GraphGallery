@@ -20,7 +20,7 @@ _AGG = {'mean': MeanAggregator,
 class GraphSAGE(TFKeras):
 
     def __init__(self, in_channels, out_channels,
-                 hiddens=[32], activations=['relu'], dropout=0.5,
+                 hids=[32], acts=['relu'], dropout=0.5,
                  weight_decay=5e-4, lr=0.01, use_bias=True,
                  aggregator='mean', output_normalize=False, n_samples=[15, 5]):
 
@@ -37,9 +37,9 @@ class GraphSAGE(TFKeras):
                      for hop, n_sample in enumerate(n_samples)]
 
         aggregators = []
-        for hidden, activation in zip(hiddens, activations):
+        for hid, act in zip(hids, acts):
             # you can use `GCNAggregator` instead
-            aggregators.append(Agg(hidden, concat=True, activation=activation,
+            aggregators.append(Agg(hid, concat=True, activation=act,
                                    use_bias=use_bias,
                                    kernel_regularizer=regularizers.l2(weight_decay)))
 

@@ -98,8 +98,8 @@ class ClusterGCN(GalleryModel):
     # use decorator to make sure all list arguments have the same length
     @gf.equal()
     def build(self,
-              hiddens=[32],
-              activations=['relu'],
+              hids=[32],
+              acts=['relu'],
               dropout=0.5,
               weight_decay=0.,
               lr=0.01,
@@ -107,8 +107,8 @@ class ClusterGCN(GalleryModel):
 
         self.model = pyGCN(self.graph.num_node_attrs,
                            self.graph.num_node_classes,
-                           hiddens=hiddens,
-                           activations=activations,
+                           hids=hids,
+                           acts=acts,
                            dropout=dropout,
                            weight_decay=weight_decay,
                            lr=lr,

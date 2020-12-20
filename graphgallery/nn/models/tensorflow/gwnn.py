@@ -12,7 +12,7 @@ from graphgallery.nn.models import TFKeras
 class GWNN(TFKeras):
 
     def __init__(self, in_channels, out_channels, num_nodes,
-                 hiddens=[16], activations=['relu'],
+                 hids=[16], acts=['relu'],
                  dropout=0.5, weight_decay=5e-4, lr=0.01,
                  use_bias=False):
 
@@ -27,8 +27,8 @@ class GWNN(TFKeras):
                                 name='inverse_wavelet_matrix')
 
         h = x
-        for hidden, activation in zip(hiddens, activations):
-            h = WaveletConvolution(hidden, activation=activation, use_bias=use_bias,
+        for hid, act in zip(hids, acts):
+            h = WaveletConvolution(hid, activation=act, use_bias=use_bias,
                                    kernel_regularizer=regularizers.l2(weight_decay))([h, wavelet, inverse_wavelet])
             h = Dropout(rate=dropout)(h)
 

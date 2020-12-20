@@ -12,8 +12,8 @@ from graphgallery import floatx
 class LGCN(TFKeras):
 
     def __init__(self, in_channels, out_channels,
-                 hiddens=[32], n_filters=[8, 8],
-                 activations=[None, None],
+                 hids=[32], n_filters=[8, 8],
+                 acts=[None, None],
                  dropout=0.8,
                  weight_decay=5e-4, lr=0.1, use_bias=False, K=8):
 
@@ -23,11 +23,11 @@ class LGCN(TFKeras):
                     sparse=False, name='adj_matrix')
 
         h = x
-        for idx, hidden in enumerate(hiddens):
+        for idx, hid in enumerate(hids):
             h = Dropout(rate=dropout)(h)
-            h = DenseConvolution(hidden,
+            h = DenseConvolution(hid,
                                  use_bias=use_bias,
-                                 activation=activations[idx],
+                                 activation=acts[idx],
                                  kernel_regularizer=regularizers.l2(weight_decay))([h, adj])
 
         for idx, n_filter in enumerate(n_filters):
@@ -36,7 +36,7 @@ class LGCN(TFKeras):
                                   kernel_size=K,
                                   use_bias=use_bias,
                                   dropout=dropout,
-                                  activation=activations[idx],
+                                  activation=acts[idx],
                                   kernel_regularizer=regularizers.l2(weight_decay))(top_k_h)
             cur_h = BatchNormalization()(cur_h)
             h = Concatenate()([h, cur_h])
@@ -44,7 +44,7 @@ class LGCN(TFKeras):
         h = Dropout(rate=dropout)(h)
         h = DenseConvolution(out_channels,
                              use_bias=use_bias,
-                             activation=activations[-1],
+                             activation=acts[-1],
                              kernel_regularizer=regularizers.l2(weight_decay))([h, adj])
 
         super().__init__(inputs=[x, adj], outputs=h)

@@ -83,8 +83,8 @@ class RobustGCN(GalleryModel):
     # use decorator to make sure all list arguments have the same length
     @gf.equal()
     def build(self,
-              hiddens=[64],
-              activations=['relu'],
+              hids=[64],
+              acts=['relu'],
               dropout=0.5,
               weight_decay=5e-4,
               lr=0.01,
@@ -92,20 +92,17 @@ class RobustGCN(GalleryModel):
               gamma=1.,
               use_bias=False):
 
-        if self.backend == "tensorflow":
-            with tf.device(self.device):
-                self.model = tfRobustGCN(self.graph.num_node_attrs,
-                                         self.graph.num_node_classes,
-                                         hiddens=hiddens,
-                                         activations=activations,
-                                         dropout=dropout,
-                                         weight_decay=weight_decay,
-                                         kl=kl,
-                                         gamma=gamma,
-                                         lr=lr,
-                                         use_bias=use_bias)
-        else:
-            raise NotImplementedError
+        with tf.device(self.device):
+            self.model = tfRobustGCN(self.graph.num_node_attrs,
+                                     self.graph.num_node_classes,
+                                     hids=hids,
+                                     acts=acts,
+                                     dropout=dropout,
+                                     weight_decay=weight_decay,
+                                     kl=kl,
+                                     gamma=gamma,
+                                     lr=lr,
+                                     use_bias=use_bias)
 
     def train_sequence(self, index):
 

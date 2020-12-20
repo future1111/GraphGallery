@@ -14,8 +14,8 @@ class GCN(TorchKeras):
     def __init__(self,
                  in_channels,
                  out_channels,
-                 hiddens=[16],
-                 activations=['relu'],
+                 hids=[16],
+                 acts=['relu'],
                  dropout=0.5,
                  weight_decay=5e-4,
                  lr=0.01,
@@ -26,13 +26,13 @@ class GCN(TorchKeras):
         self.layers = ModuleList()
 
         inc = in_channels
-        for hidden, activation in zip(hiddens, activations):
+        for hid, act in zip(hids, acts):
             layer = GraphConv(inc,
-                              hidden,
-                              activation=get_activation(activation),
+                              hid,
+                              activation=get_activation(act),
                               bias=use_bias)
             self.layers.append(layer)
-            inc = hidden
+            inc = hid
         # output layer
         self.layers.append(GraphConv(inc, out_channels))
 

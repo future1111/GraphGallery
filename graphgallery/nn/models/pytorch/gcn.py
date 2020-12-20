@@ -13,8 +13,8 @@ class GCN(TorchKeras):
     def __init__(self,
                  in_channels,
                  out_channels,
-                 hiddens=[16],
-                 activations=['relu'],
+                 hids=[16],
+                 acts=['relu'],
                  dropout=0.5,
                  weight_decay=5e-4,
                  lr=0.01,
@@ -27,14 +27,14 @@ class GCN(TorchKeras):
 
         # use ModuleList to create layers with different size
         inc = in_channels
-        for hidden, activation in zip(hiddens, activations):
+        for hid, act in zip(hids, acts):
             layer = GraphConvolution(inc,
-                                     hidden,
-                                     activation=activation,
+                                     hid,
+                                     activation=act,
                                      use_bias=use_bias)
             self.layers.append(layer)
             paras.append(dict(params=layer.parameters(), weight_decay=weight_decay))
-            inc = hidden
+            inc = hid
 
         layer = GraphConvolution(inc, out_channels, use_bias=use_bias)
         self.layers.append(layer)

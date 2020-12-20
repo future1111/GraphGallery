@@ -82,9 +82,9 @@ class LGCN(GalleryModel):
 
     # @gf.equal()
     def build(self,
-              hiddens=[32],
+              hids=[32],
               n_filters=[8, 8],
-              activations=[None, None],
+              acts=[None, None],
               dropout=0.8,
               weight_decay=5e-4,
               lr=0.1,
@@ -94,8 +94,8 @@ class LGCN(GalleryModel):
         with tf.device(self.device):
             self.model = tfLGCN(self.graph.num_node_attrs,
                                 self.graph.num_node_classes,
-                                hiddens=hiddens,
-                                activations=activations,
+                                hids=hids,
+                                acts=acts,
                                 dropout=dropout,
                                 weight_decay=weight_decay,
                                 lr=lr,

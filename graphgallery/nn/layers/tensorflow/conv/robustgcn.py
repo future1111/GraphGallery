@@ -100,8 +100,8 @@ class GaussionConvolution_F(Layer):
 
         h = x @ self.kernel
 
-        mean = activations.elu(h)
-        var = activations.relu(h)
+        mean = acts.elu(h)
+        var = acts.relu(h)
 
         attention = tf.exp(-self.gamma * var)
         mean = tf.sparse.sparse_dense_matmul(adj[0], mean * attention)
@@ -117,7 +117,7 @@ class GaussionConvolution_F(Layer):
         config = {'units': self.units,
                   'gamma': self.gamma,
                   'use_bias': self.use_bias,
-                  'activation': activations.serialize(self.activation),
+                  'activation': acts.serialize(self.activation),
                   'kernel_initializer': initializers.serialize(
                       self.kernel_initializer),
                   'bias_initializer': initializers.serialize(
@@ -243,8 +243,8 @@ class GaussionConvolution_D(Layer):
         mean, var, *adj = inputs
 #         assert len(adj) == 2
 
-        mean = activations.elu(mean @ self.kernel_mean)
-        var = activations.relu(var @ self.kernel_var)
+        mean = acts.elu(mean @ self.kernel_mean)
+        var = acts.relu(var @ self.kernel_var)
 
         attention = tf.math.exp(-self.gamma * var)
         mean = tf.sparse.sparse_dense_matmul(adj[0], mean * attention)
@@ -259,7 +259,7 @@ class GaussionConvolution_D(Layer):
     def get_config(self):
         config = {'units': self.units,
                   'gamma': self.gamma,
-                  'activation': activations.serialize(self.activation),
+                  'activation': acts.serialize(self.activation),
                   'use_bias': self.use_bias,
                   'kernel_initializer': initializers.serialize(
                       self.kernel_initializer),

@@ -139,7 +139,7 @@ class MedianAggregator(Layer):
         config = {'units': self.units,
                   'concat': self.concat,
                   'use_bias': self.use_bias,
-                  'activation': keras.activations.serialize(self.activation),
+                  'activation': keras.acts.serialize(self.activation),
                   'kernel_initializer': keras.initializers.serialize(
                       self.kernel_initializer),
                   'bias_initializer': keras.initializers.serialize(
@@ -280,7 +280,7 @@ class MedianGCNAggregator(Layer):
 
         config = {'units': self.units,
                   'use_bias': self.use_bias,
-                  'activation': keras.activations.serialize(self.activation),
+                  'activation': keras.acts.serialize(self.activation),
                   'kernel_initializer': keras.initializers.serialize(
                       self.kernel_initializer),
                   'bias_initializer': keras.initializers.serialize(

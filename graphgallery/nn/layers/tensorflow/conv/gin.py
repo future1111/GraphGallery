@@ -107,7 +107,7 @@ class GINConvolution(Layer):
         config = {'units': self.units,
                   'eps': self.eps,
                   'use_bias': self.use_bias,
-                  'activation': activations.serialize(self.activation),
+                  'activation': acts.serialize(self.activation),
                   'kernel_initializer': initializers.serialize(
                       self.kernel_initializer),
                   'bias_initializer': initializers.serialize(

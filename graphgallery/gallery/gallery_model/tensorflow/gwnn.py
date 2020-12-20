@@ -86,8 +86,8 @@ class GWNN(GalleryModel):
     # use decorator to make sure all list arguments have the same length
     @gf.equal()
     def build(self,
-              hiddens=[16],
-              activations=['relu'],
+              hids=[16],
+              acts=['relu'],
               dropout=0.5,
               weight_decay=5e-4,
               lr=0.01,
@@ -98,8 +98,8 @@ class GWNN(GalleryModel):
                 self.model = tfGWNN(self.graph.num_node_attrs,
                                     self.graph.num_node_classes,
                                     self.graph.num_nodes,
-                                    hiddens=hiddens,
-                                    activations=activations,
+                                    hids=hids,
+                                    acts=acts,
                                     dropout=dropout,
                                     weight_decay=weight_decay,
                                     lr=lr,
