@@ -1,7 +1,6 @@
 import os
 import sys
 import warnings
-import uuid
 import os.path as osp
 import numpy as np
 import tensorflow as tf
@@ -18,6 +17,8 @@ from graphgallery.nn.functions import softmax
 from graphgallery.data.io import makedirs_from_filepath
 from graphgallery.utils.raise_error import raise_if_kwargs
 from graphgallery.gallery import Model
+
+from .default import default_cfg
 
 # TensorFlow 2.1.x
 # Ignora warnings:
@@ -45,62 +46,6 @@ def unravel_batch(batch):
     else:
         inputs = batch
     return inputs, labels, out_weight
-
-
-def default_cfg(model):
-    cfg = gg.CfgNode()
-    cfg.name = model.name
-    cfg.seed = model.seed
-    cfg.device = str(model.device)
-    cfg.task = "Node Classification"
-    cfg.intx = model.intx
-    cfg.floatx = model.floatx
-    cfg.boolx = model.boolx
-
-    cfg.process = gg.CfgNode()
-    cfg.process.graph_transform = None
-    cfg.process.adj_transform = None
-    cfg.process.attr_transform = None
-    cfg.process.label_transform = None
-
-    cfg.model = gg.CfgNode()
-
-    cfg.train = gg.CfgNode()
-    cfg.train.epochs = 100
-    cfg.train.verbose = 1
-    cfg.train.save_best = True
-
-    cfg.train.EarlyStopping = gg.CfgNode()
-    cfg.train.EarlyStopping.enabled = False
-    cfg.train.EarlyStopping.monitor = 'val_loss'
-    cfg.train.EarlyStopping.verbose = 1
-    cfg.train.EarlyStopping.mode = "auto"
-    cfg.train.EarlyStopping.patience = None
-
-    cfg.train.ModelCheckpoint = gg.CfgNode()
-    cfg.train.ModelCheckpoint.enabled = True
-    cfg.train.ModelCheckpoint.monitor = 'val_accuracy'
-    # checkpoint path
-    # use `uuid` to avoid duplication
-    cfg.train.ModelCheckpoint.path = osp.join(os.getcwd(),
-                                              f"{cfg.name}_checkpoint_{uuid.uuid1().hex[:6]}{gg.file_ext()}")
-    cfg.train.ModelCheckpoint.monitor = 'val_accuracy'
-    cfg.train.ModelCheckpoint.save_best_only = True
-    cfg.train.ModelCheckpoint.save_weights_only = True
-    cfg.train.ModelCheckpoint.vervose = 0
-
-    cfg.train.Progbar = gg.CfgNode()
-    cfg.train.Progbar.width = 20
-
-    cfg.test = gg.CfgNode()
-    cfg.test.verbose = 1
-
-    cfg.test.Progbar = gg.CfgNode()
-    cfg.test.Progbar.width = 20
-
-    cfg.predict = gg.CfgNode()
-    cfg.predict.return_logits = True
-    return cfg
 
 
 class Trainer(Model):
@@ -160,11 +105,10 @@ class Trainer(Model):
     def train(self, train_data, val_data=None, **kwargs):
         cache = self.cache
         cfg = self.cfg.train
+        cfg.merge_from_dict(kwargs)
         ckpt_cfg = cfg.ModelCheckpoint
         es_cfg = cfg.EarlyStopping
         pb_cfg = cfg.Progbar
-
-        cfg.merge_from_dict(kwargs)
 
         model = self.model
         if model is None:

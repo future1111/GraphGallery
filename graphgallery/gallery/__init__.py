@@ -1,12 +1,10 @@
 from .model import Model
-from .graph_model import GraphModel
 from .trainer import Trainer
-from .gallery_model.gallery_model import GalleryModel
 from .model_zoos import (TensorFlow, PyTorch, PyG,
                          DGL_PyTorch, DGL_TensorFlow,
                          Common,
                          MAPPING)
-from .common import *
+# from .common import *
 
 import sys
 import importlib
@@ -15,8 +13,7 @@ from graphgallery import backend
 
 __all__ = ["Model", "enabled_models",
            "is_enabled", "Trainer",
-           "get_registry",
-           "GalleryModel", "SklearnModel"]
+           "get_registry", "SklearnModel"]
 
 
 def get_registry(backend_name=None):

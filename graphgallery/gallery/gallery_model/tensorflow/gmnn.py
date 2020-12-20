@@ -88,6 +88,9 @@ class GMNN(Trainer):
             'GraphConvolution': GraphConvolution,
             "TFKeras": TFKeras,
         }
+        model_p.use_tfn()
+        model_q.use_tfn()
+
         self.model_p, self.model_q = model_p, model_q
         return model_q
 
@@ -107,7 +110,6 @@ class GMNN(Trainer):
         # train model_p fitst
         train_sequence = FullBatchSequence([label_predict, self.cache.A],
                                            label_predict,
-                                           out_weight=self.cache.idx_all,
                                            device=self.device)
         if val_data is not None:
             val_sequence = FullBatchSequence([label_predict, self.cache.A],
@@ -134,7 +136,6 @@ class GMNN(Trainer):
         self.model = self.model_q
         train_sequence = FullBatchSequence([self.cache.X, self.cache.A],
                                            label_predict,
-                                           out_weight=self.cache.idx_all,
                                            device=self.device)
         history = super().train(train_sequence, val_data,
                                 ModelCheckpoint=dict(save_weights_only=True), **kwargs)

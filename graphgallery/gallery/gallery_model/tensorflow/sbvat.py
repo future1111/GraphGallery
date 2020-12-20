@@ -1,7 +1,6 @@
 import numpy as np
 import tensorflow as tf
 
-from graphgallery.gallery import GalleryModel
 from graphgallery.sequence import SBVATSampleSequence, FullBatchSequence
 from graphgallery.utils.bvat_utils import get_normalized_vector, kl_divergence_with_logit, entropy_y_x
 
