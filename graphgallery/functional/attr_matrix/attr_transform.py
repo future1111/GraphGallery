@@ -72,7 +72,7 @@ class NormalizeAttr(Transform):
         super().__init__()
         self.norm = norm
 
-    def __call__(self, x):
+    def __call__(self, *x):
         """
         Parameters
         ----------
@@ -83,10 +83,10 @@ class NormalizeAttr(Transform):
         A Normalized attribute matrix.
 
         See also
-        ----------
+        --------
         graphgallery.functional.normalize_attr
         """
-        return normalize_attr(x, norm=self.norm)
+        return normalize_attr(*x, norm=self.norm)
 
     def extra_repr(self):
         return f"norm={self.norm}"

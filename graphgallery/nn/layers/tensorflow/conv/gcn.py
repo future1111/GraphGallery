@@ -101,7 +101,7 @@ class GraphConvolution(Layer):
     def get_config(self):
         config = {'units': self.units,
                   'use_bias': self.use_bias,
-                  'activation': acts.serialize(self.activation),
+                  'activation': activations.serialize(self.activation),
                   'kernel_initializer': initializers.serialize(
                       self.kernel_initializer),
                   'bias_initializer': initializers.serialize(

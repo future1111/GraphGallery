@@ -21,6 +21,7 @@ else:
 class TFKeras(Model):
     """High-level encapsulation of Tensorflow Keras Model."""
     _use_tfn = False
+    _custom_objects = None
 
     def use_tfn(self):
         assert not self._use_tfn, "'tf.function' has been used."
@@ -124,18 +125,16 @@ class TFKeras(Model):
 
         super().save(filepath, overwrite=overwrite, save_format=save_format, **kwargs)
 
-    @classmethod
-    def load_model(filepath, custom_objects=None, **kwargs):
+    def load(self, filepath, custom_objects=None, **kwargs):
         ext = gg.file_ext()
 
         if not filepath.endswith(ext):
             filepath = filepath + ext
 
-        if custom_objects:
-            custom_objects['TFKeras'] = TFKeras
+        # if self.custom_objects:
+        #     self.custom_objects['TFKeras'] = TFKeras
 
-        return tf.keras.models.load_model(filepath,
-                                          custom_objects=custom_objects, **kwargs)
+        return tf.keras.models.load_model(filepath, custom_objects=self.custom_objects, **kwargs)
 
     @property
     def custom_objects(self):

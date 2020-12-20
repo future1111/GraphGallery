@@ -122,8 +122,12 @@ class Trainer(Model):
         super().__init__(graph, device=device, seed=seed, name=name, **kwargs)
         self.setup()
 
+    def custom_setup(self):
+        pass
+
     def setup(self):
         self.cfg = default_cfg(self)
+        self.custom_setup()
 
     def process(self, **kwargs):
 
@@ -203,7 +207,7 @@ class Trainer(Model):
             mc_callback = ModelCheckpoint(ckpt_cfg.path,
                                           monitor=ckpt_cfg.monitor,
                                           save_best_only=ckpt_cfg.save_best_only,
-                                          save_weights_only=ckpt_cfg.save_best_only,
+                                          save_weights_only=ckpt_cfg.save_weights_only,
                                           verbose=ckpt_cfg.vervose)
             callbacks.append(mc_callback)
 
@@ -325,7 +329,7 @@ class Trainer(Model):
             )
 
         cache = self.cache
-        cfg = self.cfg.test
+        cfg = self.cfg.predict
         cfg.merge_from_dict(kwargs)
 
         if predict_data is None:
@@ -337,7 +341,7 @@ class Trainer(Model):
         cache.predict_data = predict_data
 
         logits = self.predict_step(predict_data)
-        if not return_logits:
+        if not cfg.return_logits:
             logits = softmax(logits)
 
         return logits.squeeze()

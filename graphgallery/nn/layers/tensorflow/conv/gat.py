@@ -209,7 +209,7 @@ class GraphAttention(Layer):
                   'attn_heads': self.attn_heads,
                   'reduction': self.reduction,
                   'use_bias': self.use_bias,
-                  'activation': keras.acts.serialize(self.activation),
+                  'activation': keras.activations.serialize(self.activation),
                   'kernel_initializer': keras.initializers.serialize(
                       self.kernel_initializer),
                   'attn_kernel_initializer': keras.initializers.serialize(

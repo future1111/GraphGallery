@@ -21,10 +21,10 @@ class Model:
         if not isinstance(graph, gg.data.BaseGraph):
             raise ValueError(f"Unrecognized graph: {graph}.")
 
-        _backend = gg.backend()
-
         # It currently takes no keyword arguments
         gg.utils.raise_error.raise_if_kwargs(kwargs)
+
+        _backend = gg.backend()
 
         if seed:
             gf.random_seed(seed, _backend)
@@ -49,8 +49,8 @@ class Model:
     def cache(self):
         return self._cache
 
-    def register_cache(self, name, value):
-        self._cache[name] = value
+    def register_cache(self, **kwargs):
+        self._cache.update(kwargs)
 
     def __repr__(self):
         return f"{self.name}(device={self.device}, backend={self.backend})"

@@ -144,7 +144,7 @@ class TorchKeras(nn.Module):
         torch.save(self, filepath)
 
     @classmethod
-    def load(filepath):
+    def load(cls, filepath):
         ext = gg.file_ext()
 
         if not filepath.endswith(ext):

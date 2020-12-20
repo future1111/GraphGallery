@@ -117,5 +117,13 @@ class CfgNode(_CfgNode):
             cfg_dict (dict): dict of configs to merge from.
         """
         cfg_dict.pop("self", None)
-        self.update(cfg_dict)
+        merge_dict(self, cfg_dict)
         return self
+
+
+def merge_dict(a, b):
+    for k, v in b.items():
+        if not isinstance(v, dict):
+            a[k] = v
+        else:
+            merge_dict(a[k], b[k])

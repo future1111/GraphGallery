@@ -23,7 +23,7 @@ class GAT(TFKeras):
                     sparse=True, name='adj_matrix')
 
         h = x
-        for hid, n_head, activation in zip(hids, n_heads, acts):
+        for hid, n_head, act in zip(hids, n_heads, acts):
             h = GraphAttention(hid, attn_heads=n_head,
                                reduction='concat',
                                use_bias=use_bias,

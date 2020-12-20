@@ -1,6 +1,5 @@
 import tensorflow as tf
 
-from graphgallery.gallery import Trainer
 from graphgallery.sequence import FullBatchSequence
 from graphgallery import functional as gf
 from graphgallery.gallery import TensorFlow
@@ -21,14 +20,14 @@ class GCN(Trainer):
 
         This can be instantiated in the following way:
 
-            model = GCN(graph)
+            trainer = GCN(graph)
                 with a `graphgallery.data.Graph` instance representing
                 A sparse, attributed, labeled graph.
     """
 
     def process_step(self,
                      adj_transform="normalize_adj",
-                     attr_transform="normalize_attr",
+                     attr_transform=None,
                      graph_transform=None):
 
         graph = gf.get(graph_transform)(self.graph)
@@ -38,8 +37,7 @@ class GCN(Trainer):
         X, A = gf.astensors(node_attr, adj_matrix, device=self.device)
 
         # ``A`` and ``X`` are cached for later use
-        self.register_cache("X", X)
-        self.register_cache("A", A)
+        self.register_cache(X=X, A=A)
 
     def builder(self,
                 hids=[16],
