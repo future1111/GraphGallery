@@ -51,7 +51,7 @@ def default_cfg(model):
     cfg = gg.CfgNode()
     cfg.name = model.name
     cfg.seed = model.seed
-    cfg.device = model.device
+    cfg.device = str(model.device)
     cfg.task = "Node Classification"
     cfg.intx = model.intx
     cfg.floatx = model.floatx

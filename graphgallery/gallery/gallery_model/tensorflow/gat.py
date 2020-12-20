@@ -34,19 +34,19 @@ class GAT(Trainer):
 
     def builder(self,
                 hids=[8],
-                n_heads=[8],
+                num_heads=[8],
                 acts=['elu'],
                 dropout=0.6,
                 weight_decay=5e-4,
                 lr=0.01,
                 use_bias=True,
-                include=["n_heads"]):
+                include=["num_heads"]):
 
         model = get_model("GAT", self.backend)
         model = model(self.graph.num_node_attrs,
                       self.graph.num_node_classes,
                       hids=hids,
-                      n_heads=n_heads,
+                      num_heads=num_heads,
                       acts=acts,
                       dropout=dropout,
                       weight_decay=weight_decay,

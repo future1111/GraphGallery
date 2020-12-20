@@ -15,7 +15,7 @@ class GAT(TorchKeras):
                  in_channels,
                  out_channels,
                  hids=[8],
-                 n_heads=[8],
+                 num_heads=[8],
                  acts=['elu'],
                  dropout=0.6,
                  weight_decay=5e-4,
@@ -25,23 +25,23 @@ class GAT(TorchKeras):
         super().__init__()
 
         layers = ModuleList()
-        acts = []
+        act_fns = []
         paras = []
 
         inc = in_channels
         pre_head = 1
-        for hid, n_head, activation in zip(hids, n_heads, acts):
+        for hid, num_head, act in zip(hids, num_heads, acts):
             layer = GATConv(inc * pre_head,
                             hid,
-                            heads=n_head,
+                            heads=num_head,
                             bias=use_bias,
                             dropout=dropout)
             layers.append(layer)
-            acts.append(get_activation(activation))
+            act_fns.append(get_activation(act))
             paras.append(
                 dict(params=layer.parameters(), weight_decay=weight_decay))
             inc = hid
-            pre_head = n_head
+            pre_head = num_head
 
         layer = GATConv(inc * pre_head,
                         out_channels,
@@ -53,7 +53,7 @@ class GAT(TorchKeras):
         # do not use weight_decay in the final layer
         paras.append(dict(params=layer.parameters(), weight_decay=0.))
 
-        self.acts = acts
+        self.act_fns = act_fns
         self.layers = layers
         self.dropout = Dropout(dropout)
         self.compile(loss=torch.nn.CrossEntropyLoss(),
@@ -63,7 +63,7 @@ class GAT(TorchKeras):
     def forward(self, x, edge_index, edge_weight=None):
         x = self.dropout(x)
 
-        for layer, act in zip(self.layers, self.acts):
+        for layer, act in zip(self.layers, self.act_fns):
             x = act(layer(x, edge_index))
             x = self.dropout(x)
 

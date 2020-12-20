@@ -17,9 +17,9 @@ def data_type_dict(backend: Optional[Backend] = None) -> dict:
 
     Parameters
     ----------
-    backend: String or BackendModule, optional.    
-        'tensorflow', 'torch', TensorFlowBackend, PyTorchBackend, etc.    
-        if not specified, return the current default backend module. 
+    backend: String or BackendModule, optional.
+        'tensorflow', 'torch', TensorFlowBackend, PyTorchBackend, etc.
+        if not specified, return the current default backend module.
 
     Returns
     -------
@@ -37,9 +37,9 @@ def is_sparse(x: Any, backend: Optional[Backend] = None) -> bool:
     ----------
     x: A python object to check.
 
-    backend: String or BackendModule, optional.    
-        'tensorflow', 'torch', TensorFlowBackend, PyTorchBackend, etc.    
-        if not specified, return the current default backend module. 
+    backend: String or BackendModule, optional.
+        'tensorflow', 'torch', TensorFlowBackend, PyTorchBackend, etc.
+        if not specified, return the current default backend module.
 
     Returns:
     -------
@@ -55,9 +55,9 @@ def is_dense(x: Any, backend: Optional[Backend] = None) -> bool:
     Parameters:
     ----------
     x: A python object to check.
-    backend: String or BackendModule, optional.    
-        'tensorflow', 'torch', TensorFlowBackend, PyTorchBackend, etc.    
-        if not specified, return the current default backend module. 
+    backend: String or BackendModule, optional.
+        'tensorflow', 'torch', TensorFlowBackend, PyTorchBackend, etc.
+        if not specified, return the current default backend module.
 
     Returns:
     ----------
@@ -69,19 +69,20 @@ def is_dense(x: Any, backend: Optional[Backend] = None) -> bool:
 
 
 def is_tensor(x: Any, backend: Optional[Backend] = None) -> bool:
-    """Check whether 'x' is 
+    """Check whether 'x' is
         tf.Tensor,
         tf.Variable,
         tf.RaggedTensor,
         tf.sparse.SparseTensor,
-        torch.Tensor, 
+        torch.Tensor,
         torch.sparse.Tensor.
+
     Parameters:
     ----------
     x: A python object to check.
-    backend: String or BackendModule, optional.    
-        'tensorflow', 'torch', TensorFlowBackend, PyTorchBackend, etc.    
-        if not specified, return the current default backend module.  
+    backend: String or BackendModule, optional.
+        'tensorflow', 'torch', TensorFlowBackend, PyTorchBackend, etc.
+        if not specified, return the current default backend module.
 
     Returns:
     -------
@@ -89,6 +90,29 @@ def is_tensor(x: Any, backend: Optional[Backend] = None) -> bool:
     """
     module = get_module(backend)
     return module.is_tensor(x)
+
+
+def is_anytensor(x: Any) -> bool:
+    """Check whether 'x' is
+        any of
+        tf.Tensor,
+        tf.Variable,
+        tf.RaggedTensor,
+        tf.sparse.SparseTensor,
+        torch.Tensor,
+        torch.sparse.Tensor.
+    Parameters:
+    ----------
+    x: A python object to check.
+    backend: String or BackendModule, optional.
+        'tensorflow', 'torch', TensorFlowBackend, PyTorchBackend, etc.
+        if not specified, return the current default backend module.
+
+    Returns:
+    -------
+    `True` iff x is any of (tf or torch) (sparse-)tensor.
+    """
+    return is_tensor(x, "tensorflow") or is_tensor(x, "torch")
 
 
 def astensor(x, *, dtype=None, device: Optional[Device] = None,

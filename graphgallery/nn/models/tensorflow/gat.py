@@ -12,7 +12,7 @@ from graphgallery.nn.models import TFKeras
 class GAT(TFKeras):
 
     def __init__(self, in_channels,
-                 out_channels, hids=[16], n_heads=[8],
+                 out_channels, hids=[16], num_heads=[8],
                  acts=['elu'], dropout=0.6,
                  weight_decay=5e-4,
                  lr=0.01, use_bias=True):
@@ -23,8 +23,8 @@ class GAT(TFKeras):
                     sparse=True, name='adj_matrix')
 
         h = x
-        for hid, n_head, act in zip(hids, n_heads, acts):
-            h = GraphAttention(hid, attn_heads=n_head,
+        for hid, num_head, act in zip(hids, num_heads, acts):
+            h = GraphAttention(hid, attnum_heads=num_head,
                                reduction='concat',
                                use_bias=use_bias,
                                activation=act,
@@ -35,7 +35,7 @@ class GAT(TFKeras):
             h = Dropout(rate=dropout)(h)
 
         h = GraphAttention(out_channels, use_bias=use_bias,
-                           attn_heads=1, reduction='average')([h, adj])
+                           attnum_heads=1, reduction='average')([h, adj])
 
         super().__init__(inputs=[x, adj], outputs=h)
         self.compile(loss=SparseCategoricalCrossentropy(from_logits=True),

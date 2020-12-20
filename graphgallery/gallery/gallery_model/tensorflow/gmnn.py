@@ -27,16 +27,17 @@ class GMNN(Trainer):
     def process_step(self,
                      adj_transform="normalize_adj",
                      attr_transform=None,
-                     graph_transform=None):
+                     graph_transform=None,
+                     label_transform="onehot"):
         graph = gf.get(graph_transform)(self.graph)
         adj_matrix = gf.get(adj_transform)(graph.adj_matrix)
         node_attr = gf.get(attr_transform)(graph.node_attr)
+        label = gf.get(label_transform)(graph.node_label)
 
         X, A = gf.astensors(node_attr, adj_matrix, device=self.device)
 
         # ``A`` and ``X`` are cached for later use
-        self.register_cache(X=X, A=A,
-                            label_onehot=gf.onehot(graph.node_label),
+        self.register_cache(X=X, A=A, Y=label,
                             idx_all=tf.range(graph.num_nodes, dtype=self.intx))
 
     def builder(self,
@@ -100,7 +101,7 @@ class GMNN(Trainer):
 
         histories.append(history)
 
-        label_predict = self.predict().argmax(1)
+        label_predict = self.predict(self.cache.idx_all).argmax(1)
         label_predict[train_data] = self.graph.node_label[train_data]
         label_predict = tf.one_hot(label_predict, depth=self.graph.num_node_classes)
         # train model_p fitst
@@ -110,7 +111,7 @@ class GMNN(Trainer):
                                            device=self.device)
         if val_data is not None:
             val_sequence = FullBatchSequence([label_predict, self.cache.A],
-                                             self.cache.label_onehot[val_data],
+                                             self.cache.Y[val_data],
                                              out_weight=val_data,
                                              device=self.device)
         else:
@@ -128,7 +129,7 @@ class GMNN(Trainer):
         if tf.is_tensor(label_predict):
             label_predict = label_predict.numpy()
 
-        label_predict[train_data] = self.cache.label_onehot[train_data]
+        label_predict[train_data] = self.cache.Y[train_data]
 
         self.model = self.model_q
         train_sequence = FullBatchSequence([self.cache.X, self.cache.A],
@@ -144,8 +145,7 @@ class GMNN(Trainer):
 
     def train_sequence(self, index):
 
-        # if the graph is changed?
-        labels = self.cache.label_onehot[index]
+        labels = self.cache.Y[index]
         sequence = FullBatchSequence([self.cache.X, self.cache.A],
                                      labels,
                                      out_weight=index,

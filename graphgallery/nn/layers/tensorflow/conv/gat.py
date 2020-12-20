@@ -15,7 +15,7 @@ class GraphAttention(Layer):
 
         Parameters:
           units: Positive integer, dimensionality of the output space.
-          atten_heads: Positive integer, number of attention heads.
+          attenum_heads: Positive integer, number of attention heads.
           reduction: {'concat', 'average'}, whether to enforce concat or average for the outputs from different heads.
           dropout: Float, internal dropout rate
           activation: Activation function to use.
@@ -43,12 +43,12 @@ class GraphAttention(Layer):
           The former one is the node attribute matrix (Tensor) and the last is adjacency matrix (SparseTensor).
 
         Output shape:
-          2-D tensor with shape: `(num_nodes, units)` (use average) or `(num_nodes, attn_heads * units)` (use concat).       
+          2-D tensor with shape: `(num_nodes, units)` (use average) or `(num_nodes, attnum_heads * units)` (use concat).       
     """
 
     def __init__(self,
                  units,
-                 attn_heads=1,
+                 attnum_heads=1,
                  reduction='concat',
                  dropout=0.5,
                  activation=None,
@@ -71,7 +71,7 @@ class GraphAttention(Layer):
             raise ValueError('Possbile reduction methods: concat, average')
 
         self.units = units  # Number of output attributes (F' in the paper)
-        self.attn_heads = attn_heads  # Number of attention heads (K in the paper)
+        self.attnum_heads = attnum_heads  # Number of attention heads (K in the paper)
         self.reduction = reduction  # Eq. 5 and 6 in the paper
         self.dropout = dropout  # Internal dropout rate
         self.activation = activations.get(activation)  # Eq. 4 in the paper
@@ -97,7 +97,7 @@ class GraphAttention(Layer):
 
         if reduction == 'concat':
             # Output will have shape (..., K * F')
-            self.output_dim = self.units * self.attn_heads
+            self.output_dim = self.units * self.attnum_heads
         else:
             # Output will have shape (..., F')
             self.output_dim = self.units
@@ -106,7 +106,7 @@ class GraphAttention(Layer):
         input_dim = input_shape[0][-1]
 
         # Initialize weights for each attention head
-        for head in range(self.attn_heads):
+        for head in range(self.attnum_heads):
             # Layer kernel
             kernel = self.add_weight(shape=(input_dim, self.units),
                                      initializer=self.kernel_initializer,
@@ -152,7 +152,7 @@ class GraphAttention(Layer):
         x, adj = inputs
 
         outputs = []
-        for head in range(self.attn_heads):
+        for head in range(self.attnum_heads):
             kernel = self.kernels[head]  # W in the paper
             attn_kernel_self, attn_kernel_neighs = self.attn_kernels[head]  # Attention kernel a in the paper (2F' x 1)
 
@@ -206,7 +206,7 @@ class GraphAttention(Layer):
     def get_config(self):
 
         config = {'units': self.units,
-                  'attn_heads': self.attn_heads,
+                  'attnum_heads': self.attnum_heads,
                   'reduction': self.reduction,
                   'use_bias': self.use_bias,
                   'activation': keras.activations.serialize(self.activation),

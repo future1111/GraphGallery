@@ -11,7 +11,7 @@ class GraphAttention(nn.Module):
                  in_channels,
                  out_channels,
                  activation=None,
-                 attn_heads=8,
+                 attnum_heads=8,
                  alpha=0.2,
                  reduction='concat',
                  dropout=0.6,
@@ -26,7 +26,7 @@ class GraphAttention(nn.Module):
         self.activation = get_activation(activation)
 
         self.dropout = dropout
-        self.attn_heads = attn_heads
+        self.attnum_heads = attnum_heads
         self.reduction = reduction
 
         self.kernels = nn.ParameterList()
@@ -39,7 +39,7 @@ class GraphAttention(nn.Module):
             self.register_parameter('bias', None)
 
         # Initialize weights for each attention head
-        for head in range(self.attn_heads):
+        for head in range(self.attnum_heads):
             W = nn.Parameter(torch.FloatTensor(in_channels, out_channels),
                              requires_grad=True)
             self.kernels.append(W)
@@ -59,7 +59,7 @@ class GraphAttention(nn.Module):
         self.reset_parameters()
 
     def reset_parameters(self):
-        for head in range(self.attn_heads):
+        for head in range(self.attnum_heads):
             W, a1, a2 = self.kernels[head], self.attn_kernel_self[
                 head], self.attn_kernel_neighs[head]
             glorot_uniform(W)
@@ -74,7 +74,7 @@ class GraphAttention(nn.Module):
         dense_adj = adj.to_dense()
 
         outputs = []
-        for head in range(self.attn_heads):
+        for head in range(self.attnum_heads):
             W, a1, a2 = self.kernels[head], self.attn_kernel_self[
                 head], self.attn_kernel_neighs[head]
             Wh = torch.mm(x, W)
@@ -150,7 +150,7 @@ class SparseGraphAttention(nn.Module):
                  in_channels,
                  out_channels,
                  activation=None,
-                 attn_heads=8,
+                 attnum_heads=8,
                  alpha=0.2,
                  reduction='concat',
                  dropout=0.6,
@@ -165,7 +165,7 @@ class SparseGraphAttention(nn.Module):
         self.activation = get_activation(activation)
 
         self.dropout = nn.Dropout(dropout)
-        self.attn_heads = attn_heads
+        self.attnum_heads = attnum_heads
         self.reduction = reduction
 
         self.kernels = nn.ParameterList()
@@ -177,7 +177,7 @@ class SparseGraphAttention(nn.Module):
             self.register_parameter('bias', None)
 
         # Initialize weights for each attention head
-        for head in range(self.attn_heads):
+        for head in range(self.attnum_heads):
             W = nn.Parameter(torch.Tensor(in_channels, out_channels))
             self.kernels.append(W)
             a = nn.Parameter(torch.Tensor(1, 2 * out_channels))
@@ -192,7 +192,7 @@ class SparseGraphAttention(nn.Module):
         self.reset_parameters()
 
     def reset_parameters(self):
-        for head in range(self.attn_heads):
+        for head in range(self.attnum_heads):
             glorot_uniform(self.kernels[head])
             glorot_uniform(self.att_kernels[head])
 
@@ -206,7 +206,7 @@ class SparseGraphAttention(nn.Module):
         edge = adj._indices()
 
         outputs = []
-        for head in range(self.attn_heads):
+        for head in range(self.attnum_heads):
             W, a = self.kernels[head], self.att_kernels[head]
             h = x @ W
 

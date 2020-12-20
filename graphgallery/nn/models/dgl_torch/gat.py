@@ -14,7 +14,7 @@ class GAT(TorchKeras):
                  in_channels,
                  out_channels,
                  hids=[8],
-                 n_heads=[8],
+                 num_heads=[8],
                  acts=['elu'],
                  dropout=0.6,
                  weight_decay=5e-4,
@@ -27,18 +27,18 @@ class GAT(TorchKeras):
 
         inc = in_channels
         pre_head = 1
-        for hid, n_head, act in zip(hids, n_heads, acts):
+        for hid, num_head, act in zip(hids, num_heads, acts):
             layer = GATConv(inc * pre_head,
                             hid,
                             activation=get_activation(act),
-                            num_heads=n_head,
+                            num_heads=num_head,
                             feat_drop=dropout,
                             attn_drop=dropout)
             layers.append(layer)
             paras.append(
                 dict(params=layer.parameters(), weight_decay=weight_decay))
             inc = hid
-            pre_head = n_head
+            pre_head = num_head
 
         layer = GATConv(inc * pre_head,
                         out_channels,

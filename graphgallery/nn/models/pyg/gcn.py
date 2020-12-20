@@ -24,9 +24,8 @@ class GCN(TorchKeras):
         super().__init__()
 
         paras = []
-        acts = []
+        act_fns = []
         layers = ModuleList()
-
         # use ModuleList to create layers with different size
         inc = in_channels
         for hid, act in zip(hids, acts):
@@ -38,7 +37,7 @@ class GCN(TorchKeras):
             layers.append(layer)
             paras.append(
                 dict(params=layer.parameters(), weight_decay=weight_decay))
-            acts.append(get_activation(activation))
+            act_fns.append(get_activation(act))
             inc = hid
 
         layer = GCNConv(inc,
@@ -50,7 +49,7 @@ class GCN(TorchKeras):
         # do not use weight_decay in the final layer
         paras.append(dict(params=layer.parameters(), weight_decay=0.))
 
-        self.acts = acts
+        self.act_fns = act_fns
         self.layers = layers
         self.dropout = Dropout(dropout)
         self.compile(loss=torch.nn.CrossEntropyLoss(),
@@ -59,7 +58,7 @@ class GCN(TorchKeras):
 
     def forward(self, x, edge_index, edge_weight=None):
 
-        for layer, act in zip(self.layers, self.acts):
+        for layer, act in zip(self.layers, self.act_fns):
             x = act(layer(x, edge_index, edge_weight))
             x = self.dropout(x)
 
