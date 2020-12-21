@@ -18,4 +18,4 @@ def random_seed(seed: int = None, backend: Optional[Backend] = None):
     else:
         torch.manual_seed(seed)
         torch.cuda.manual_seed(seed)
-        # torch.cuda.manual_seed_all(seed)
+#         torch.cuda.manual_seed_all(seed)

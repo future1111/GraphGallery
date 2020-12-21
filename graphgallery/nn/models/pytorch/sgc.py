@@ -27,7 +27,7 @@ class SGC(TorchKeras):
                 " Or you can set both of them to `[]`.")
 
         layers = ModuleList()
-        acts = []
+        acts_fn = []
         paras = []
         inc = in_channels
         for hid, act in zip(hids, acts):
@@ -36,7 +36,7 @@ class SGC(TorchKeras):
                 dict(params=layer.parameters(), weight_decay=weight_decay))
             layers.append(layer)
             inc = hid
-            acts.append(get_activation(activation))
+            acts_fn.append(get_activation(act))
 
         layer = Linear(inc, out_channels, bias=use_bias)
         layers.append(layer)
@@ -44,7 +44,7 @@ class SGC(TorchKeras):
                           weight_decay=weight_decay))
 
         self.layers = layers
-        self.acts = acts
+        self.acts_fn = acts_fn
         self.dropout = Dropout(dropout)
         self.compile(loss=torch.nn.CrossEntropyLoss(),
                      optimizer=optim.Adam(paras, lr=lr),
@@ -53,7 +53,7 @@ class SGC(TorchKeras):
     def forward(self, inputs):
         x = inputs
 
-        for layer, act in zip(self.layers, self.acts):
+        for layer, act in zip(self.layers[:-1], self.acts_fn):
             x = self.dropout(x)
             x = act(layer(x))
 

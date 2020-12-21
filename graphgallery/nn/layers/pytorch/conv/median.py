@@ -26,10 +26,8 @@ class MedianConvolution(nn.Module):
         for node, nbr in enumerate(nbrs):
             message, _ = torch.median(h[nbr], 0)
             aggregation.append(message)
+            
         output = torch.stack(aggregation)
-
-        if self.bias is not None:
-            output += self.bias
 
         return self.activation(output)
 
