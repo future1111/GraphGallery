@@ -50,7 +50,7 @@ class SAGEMiniBatchSequence(Sequence):
         x,
         y=None,
         out_weight=None,
-        n_samples=[5, 5],
+        num_samples=[5, 5],
         shuffle=False,
         batch_size=512,
         *args, **kwargs
@@ -62,7 +62,7 @@ class SAGEMiniBatchSequence(Sequence):
         self.shuffle = shuffle
         self.batch_size = batch_size
         self.indices = np.arange(len(self.batch_nodes))
-        self.n_samples = n_samples
+        self.num_samples = num_samples
 
         self.node_attr = self.astensor(self.node_attr)
 
@@ -77,9 +77,9 @@ class SAGEMiniBatchSequence(Sequence):
             idx = slice(index * self.batch_size, (index + 1) * self.batch_size)
 
         nodes_input = [self.batch_nodes[idx]]
-        for n_sample in self.n_samples:
+        for num_sample in self.num_samples:
             neighbors = sample_neighbors(
-                self.adj_matrix, nodes_input[-1], n_sample).ravel()
+                self.adj_matrix, nodes_input[-1], num_sample).ravel()
             nodes_input.append(neighbors)
 
         y = self.y[idx] if self.y is not None else None
@@ -100,9 +100,9 @@ class SAGEMiniBatchSequence(Sequence):
         random.shuffle(self.indices)
 
 
-def sample_neighbors(adj_matrix, nodes, n_neighbors):
+def sample_neighbors(adj_matrix, nodes, num_neighbors):
     np.random.shuffle(adj_matrix.T)
-    return adj_matrix[nodes, :n_neighbors]
+    return adj_matrix[nodes, :num_neighbors]
 
 
 class FastGCNBatchSequence(Sequence):

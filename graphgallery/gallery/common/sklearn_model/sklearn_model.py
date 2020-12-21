@@ -1,65 +1,66 @@
 from sklearn.preprocessing import normalize
-from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
 
-from graphgallery.gallery import GraphModel
+from graphgallery.gallery import Trainer
 from graphgallery import functional as gf
+import graphgallery as gg
 
 
-class SklearnModel(GraphModel):
+class SklearnModel(Trainer):
     """Sklean based model for unsupervised learning."""
 
-    def __init__(self, graph, device="cpu", seed=None, name=None, **kwargs):
-        r"""Create an Sklean based model 
+    def setup_cfg(self):
+        self.backend = None
+        cfg = gg.CfgNode()
+        cfg.name = self.name
+        cfg.seed = self.seed
+        cfg.device = str(self.device)
+        cfg.task = "Embedding"
+        cfg.intx = self.intx
+        cfg.floatx = self.floatx
+        cfg.boolx = self.boolx
+        cfg.backend = self.backend
+        cfg.normalize_embedding = True
 
-        Parameters:
-        ----------
-        graph: An instance of graphgallery Graph.
-            A sparse, attributed, labeled graph.
-        device: string. optional
-            The device where the model is running on. 
-            You can specified ``CPU``, ``GPU`` or ``cuda`` 
-            for the model. (default: :str: `cpu`, i.e., running on the `CPU`)
-        seed: interger scalar. optional 
-            Used in combination with `tf.random.set_seed` & `np.random.seed` 
-            & `random.seed` to create a reproducible sequence of tensors across 
-            multiple calls. (default :obj: `None`, i.e., using random seed)
-        name: string. optional
-            Specified name for the model. (default: :str: `class.__name__`)        
-        kwargs: keyword parameters for transform, including:
-            ``adj_transform``, ``attr_transform``, 
-            ``label_transform``, ``graph_transform``, etc.
-        """
-        super().__init__(graph, device=device, seed=seed, name=name, **kwargs)
+        cfg.model = gg.CfgNode()
+        cfg.process = gg.CfgNode()
 
-    def build(self):
-        self._embeddings = None
-        self.classifier = LogisticRegression(solver='lbfgs',
-                                             max_iter=1000,
-                                             multi_class='auto',
-                                             random_state=self.seed)
+        cfg.classifier = gg.CfgNode()
+        cfg.classifier.name = "LogisticRegression"
+        cfg.classifier.solver = "lbfgs"
+        cfg.classifier.max_iter = 1000
+        cfg.classifier.multi_class = "auto"
+        cfg.classifier.random_state = None
 
-    @property
-    def embeddings(self):
-        if self._embeddings is None:
-            self._embeddings = self.get_embeddings()
-        return self._embeddings
+        self.cfg = cfg
+
+    def build(self, **kwargs):
+        self.model, kwargs = gf.wrapper(self.model_builder)(**kwargs)
+        self.cfg.model.merge_from_dict(kwargs)
+        self.classifier = self.classifier_builder()
+        return self
+
+    def builder(self, *args, **kwargs):
+        raise NotImplementedError
+
+    def train_sequence(self, index, **kwargs):
+        index = gf.asarray(index)
+        return self.embeddings[index], self.graph.node_label[index]
 
     def train(self, index):
-        index = gf.asarray(index)
-        self.classifier.fit(self.embeddings[index],
-                            self.graph.node_label[index])
+        x, y = self.train_sequence(index)
+        self.classifier.fit(x, y)
+        return gf.BunchDict(loss=None, accuracy=None)
 
     def predict(self, index):
-        index = gf.asarray(index)
-        logit = self.classifier.predict_proba(self.embeddings[index])
+        x, y = self.predict_sequence(index)
+        logit = self.classifier.predict_proba(x)
         return logit
 
     def test(self, index):
-        index = gf.asarray(index)
-        y_true = self.graph.node_label[index]
-        y_pred = self.classifier.predict(self.embeddings[index])
-        accuracy = accuracy_score(y_true, y_pred)
+        x, y = self.test_sequence(index)
+        y_pred = self.classifier.predict(x)
+        accuracy = accuracy_score(y, y_pred)
         return gf.BunchDict(loss=None, accuracy=accuracy)
 
     @staticmethod

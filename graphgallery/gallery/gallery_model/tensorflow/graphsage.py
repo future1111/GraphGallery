@@ -18,8 +18,8 @@ class GraphSAGE(Trainer):
     """
 
     def custom_setup(self):
-        self.cfg.train.n_samples = [15, 5]
-        self.cfg.test.n_samples = [15, 5]
+        self.cfg.train.num_samples = [15, 5]
+        self.cfg.test.num_samples = [15, 5]
 
     def process_step(self,
                      adj_transform="neighbor_sampler",
@@ -47,7 +47,7 @@ class GraphSAGE(Trainer):
                 use_bias=True,
                 output_normalize=False,
                 aggregator='mean',
-                n_samples=[15, 5]):
+                num_samples=[15, 5]):
 
         model = get_model("GraphSAGE", self.backend)
         model = model(self.graph.num_node_attrs,
@@ -60,7 +60,7 @@ class GraphSAGE(Trainer):
                       use_bias=use_bias,
                       aggregator=aggregator,
                       output_normalize=output_normalize,
-                      n_samples=n_samples)
+                      num_samples=num_samples)
         model.use_tfn()
 
         return model
@@ -71,6 +71,6 @@ class GraphSAGE(Trainer):
         sequence = SAGEMiniBatchSequence(
             [self.cache.X, self.cache.A, index],
             labels,
-            n_samples=self.cfg.model.n_samples,
+            num_samples=self.cfg.model.num_samples,
             device=self.device)
         return sequence

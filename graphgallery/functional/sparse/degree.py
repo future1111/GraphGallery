@@ -7,8 +7,8 @@ from numba.typed import Dict
 @njit
 def mixing_matrix(edges, in_deg, out_deg, mapping):
 
-    n_degrees = len(mapping)
-    M = np.zeros((n_degrees, n_degrees))
+    num_degrees = len(mapping)
+    M = np.zeros((num_degrees, num_degrees))
 
     for i in range(edges.shape[1]):
         u = edges[0][i]

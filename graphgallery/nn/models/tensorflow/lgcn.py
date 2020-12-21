@@ -12,7 +12,7 @@ from graphgallery import floatx
 class LGCN(TFKeras):
 
     def __init__(self, in_channels, out_channels,
-                 hids=[32], n_filters=[8, 8],
+                 hids=[32], num_filters=[8, 8],
                  acts=[None, None],
                  dropout=0.8,
                  weight_decay=5e-4, lr=0.1, use_bias=False, K=8):
@@ -30,9 +30,9 @@ class LGCN(TFKeras):
                                  activation=acts[idx],
                                  kernel_regularizer=regularizers.l2(weight_decay))([h, adj])
 
-        for idx, n_filter in enumerate(n_filters):
+        for idx, num_filter in enumerate(num_filters):
             top_k_h = Top_k_features(K=K)([h, adj])
-            cur_h = LGConvolution(n_filter,
+            cur_h = LGConvolution(num_filter,
                                   kernel_size=K,
                                   use_bias=use_bias,
                                   dropout=dropout,

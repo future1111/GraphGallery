@@ -5,73 +5,56 @@ import gensim
 
 from gensim.models import Word2Vec
 from distutils.version import LooseVersion
+from sklearn.linear_model import LogisticRegression
 
 from graphgallery.utils.walker import RandomWalker, alias_sample
-from .sklearn_model import SklearnModel
 from graphgallery.gallery import Common
+from graphgallery import functional as gf
+from .sklearn_model import SklearnModel
 
 
 @Common.register()
 class Node2vec(SklearnModel):
     """
-        Implementation of Node2vec Unsupervised Graph Neural Networks (Node2vec). 
+        Implementation of Node2vec Unsupervised Graph Neural Networks (Node2vec).
         `node2vec: Scalable attribute Learning for Networks <https://arxiv.org/abs/1607.00653>`
         Implementation: <https://github.com/aditya-grover/node2vec>
         Cpp implementation: <https://github.com/snap-stanford/snap/tree/master/examples/node2vec>
 
     """
 
-    def __init__(self, graph, device="cpu", seed=None, name=None, **kwargs):
-        r"""Create an unsupervised Node2Vec model.
+    def process_step(self,
+                     adj_transform=None,
+                     attr_transform=None,
+                     graph_transform=None,
+                     p=0.5,
+                     q=0.5,
+                     walk_length=80,
+                     walks_per_node=10):
 
-        This can be instantiated in the following way:
+        graph = gf.get(graph_transform)(self.graph).nxgraph()
+        walker = RandomWalker(graph, p=p, q=q)
+        walker.preprocess_transition_probs()
 
-            model = Node2vec(graph)
-                with a `graphgallery.data.Graph` instance representing
-                A sparse, attributed, labeled graph.
-
-        Parameters:
-        ----------
-        graph: An instance of `graphgallery.data.Graph`.
-            A sparse, labeled graph.
-        device: string. optional
-            The device where the model is running on. 
-            You can specified ``CPU``, ``GPU`` or ``cuda`` 
-            for the model. (default: :str: `cpu`, i.e., running on the `CPU`)
-        seed: interger scalar. optional 
-            Used in combination with `tf.random.set_seed` & `np.random.seed` 
-            & `random.seed` to create a reproducible sequence of tensors across 
-            multiple calls. (default :obj: `None`, i.e., using random seed)
-        name: string. optional
-            Specified name for the model. (default: :str: `class.__name__`)        
-        kwargs: keyword parameters for transform, including:
-            ``adj_transform``, ``attr_transform``, 
-            ``label_transform``, ``graph_transform``, etc.
-        """
-        super().__init__(graph, device=device, seed=seed, name=name, **kwargs)
-
-    def build(self,
-              walk_length=80,
-              walks_per_node=10,
-              embedding_dim=64,
-              window_size=5,
-              workers=16,
-              epochs=1,
-              num_neg_samples=1,
-              p=0.5,
-              q=0.5):
-        super().build()
-        graph = self.transform.graph_transform(self.graph)
-        nxgraph = graph.nxgraph()
-        self.walker = RandomWalker(nxgraph, p=p, q=q)
-        self.walker.preprocess_transition_probs()
-
-        walks = self.node2vec_random_walk(nxgraph,
-                                          self.walker.alias_nodes,
-                                          self.walker.alias_edges,
+        walks = self.node2vec_random_walk(graph,
+                                          walker.alias_nodes,
+                                          walker.alias_edges,
                                           walk_length=walk_length,
                                           walks_per_node=walks_per_node)
 
+        self.register_cache(walks=walks)
+
+    def model_builder(self,
+                      name="Word2Vec",
+                      embedding_dim=64,
+                      window_size=5,
+                      workers=16,
+                      epochs=1,
+                      num_neg_samples=1):
+
+        assert name == "Word2Vec"
+
+        walks = self.cache.walks
         sentences = [list(map(str, walk)) for walk in walks]
         if LooseVersion(gensim.__version__) <= LooseVersion("4.0.0"):
             model = Word2Vec(sentences,
@@ -97,7 +80,16 @@ class Node2vec(SklearnModel):
                              hs=0,
                              compute_loss=True)
 
-        self.model = model
+        return model
+
+    def classifier_builder(self):
+        cfg = self.cfg.classifier
+        assert cfg.name == "LogisticRegression"
+        classifier = LogisticRegression(solver=cfg.solver,
+                                        max_iter=cfg.max_iter,
+                                        multi_class=cfg.multi_class,
+                                        random_state=cfg.random_state)
+        return classifier
 
     @staticmethod
     def node2vec_random_walk(G,
@@ -127,7 +119,8 @@ class Node2vec(SklearnModel):
                     single_walk.append(current_node)
                 yield single_walk
 
-    def get_embeddings(self, norm=True):
+    @property
+    def embeddings(self):
         if LooseVersion(gensim.__version__) <= LooseVersion("4.0.0"):
             embeddings = self.model.wv.vectors[np.fromiter(
                 map(int, self.model.wv.index2word), np.int32).argsort()]
@@ -135,7 +128,7 @@ class Node2vec(SklearnModel):
             embeddings = self.model.wv.vectors[np.fromiter(
                 map(int, self.model.wv.index_to_key), np.int32).argsort()]
 
-        if norm:
+        if self.cfg.normalize_embedding:
             embeddings = self.normalize_embedding(embeddings)
 
         return embeddings

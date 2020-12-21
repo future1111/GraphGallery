@@ -39,7 +39,7 @@ class SBVAT(Trainer):
         cfg.xi = 1e-6
         cfg.epsilon = 3e-2
         cfg.n_power_iterations = 1
-        cfg.n_samples = 50
+        cfg.num_samples = 50
 
     def process_step(self,
                      adj_transform="normalize_adj",
@@ -139,7 +139,7 @@ class SBVAT(Trainer):
                                        labels,
                                        out_weight=index,
                                        neighbors=self.cache.neighbors,
-                                       n_samples=self.cfg.train.n_samples,
+                                       num_samples=self.cfg.train.num_samples,
                                        device=self.device)
 
         return sequence

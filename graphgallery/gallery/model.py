@@ -45,6 +45,11 @@ class Model:
         self.cfg = None
         self._model = None
 
+        self.setup_cfg()
+
+    def setup_cfg(self):
+        pass
+
     @property
     def cache(self):
         return self._cache

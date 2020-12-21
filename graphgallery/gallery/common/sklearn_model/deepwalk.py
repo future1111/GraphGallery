@@ -5,64 +5,46 @@ from numba import njit
 from gensim.models import Word2Vec
 from distutils.version import LooseVersion
 
-from .sklearn_model import SklearnModel
-
+from sklearn.linear_model import LogisticRegression
+from graphgallery import functional as gf
 from graphgallery.gallery import Common
+from .sklearn_model import SklearnModel
 
 
 @Common.register()
 class Deepwalk(SklearnModel):
     """
-        Implementation of DeepWalk Unsupervised Graph Neural Networks (DeepWalk). 
+        Implementation of DeepWalk Unsupervised Graph Neural Networks (DeepWalk).
         `DeepWalk: Online Learning of Social Representations <https://arxiv.org/abs/1403.6652>`
         Implementation: <https://github.com/phanein/deepwalk>
     """
 
-    def __init__(self, graph, device="cpu", seed=None, name=None, **kwargs):
-        r"""Create an unsupervised Deepwalk model.
-
-        This can be instantiated in the following way:
-
-            model = Deepwalk(graph)
-                with a graphgallery Graph instance representing
-                A sparse, attributed, labeled graph.
-
-        Parameters:
-        ----------
-        graph: An instance of `graphgallery.data.Graph`.
-            A sparse, labeled graph.
-        device: string. optional
-            The device where the model is running on. 
-            You can specified ``CPU``, ``GPU`` or ``cuda``  
-            for the model. (default: :str: `cpu`, i.e., running on the `CPU`)
-        seed: interger scalar. optional 
-            Used in combination with `tf.random.set_seed` & `np.random.seed` 
-            & `random.seed` to create a reproducible sequence of tensors across 
-            multiple calls. (default :obj: `None`, i.e., using random seed)
-        name: string. optional
-            Specified name for the model. (default: :str: `class.__name__`)        
-        kwargs: keyword parameters for transform, including:
-            ``adj_transform``, ``attr_transform``, 
-            ``label_transform``, ``graph_transform``, etc.
-        """
-        super().__init__(graph, device=device, seed=seed, name=name, **kwargs)
-
-    def build(self,
-              walk_length=80,
-              walks_per_node=10,
-              embedding_dim=64,
-              window_size=5,
-              workers=16,
-              epochs=1,
-              num_neg_samples=1):
-        super().build()
-        graph = self.transform.graph_transform(self.graph)
-        adj_matrix = graph.adj_matrix
+    def process_step(self,
+                     adj_transform=None,
+                     attr_transform=None,
+                     graph_transform=None,
+                     walk_length=80,
+                     walks_per_node=10):
+        graph = gf.get(graph_transform)(self.graph)
+        adj_matrix = gf.get(adj_transform)(graph.adj_matrix)
         walks = self.deepwalk_random_walk(adj_matrix.indices,
                                           adj_matrix.indptr,
                                           walk_length=walk_length,
                                           walks_per_node=walks_per_node)
 
+        self.register_cache(walks=walks)
+
+    def model_builder(self,
+                      name="Word2Vec",
+                      embedding_dim=64,
+                      window_size=5,
+                      workers=16,
+                      epochs=1,
+                      num_neg_samples=1):
+
+        assert name == "Word2Vec"
+
+        walks = self.cache.walks
         sentences = [list(map(str, walk)) for walk in walks]
         if LooseVersion(gensim.__version__) <= LooseVersion("4.0.0"):
             model = Word2Vec(sentences,
@@ -87,8 +69,16 @@ class Deepwalk(SklearnModel):
                              negative=num_neg_samples,
                              hs=0,
                              compute_loss=True)
+        return model
 
-        self.model = model
+    def classifier_builder(self):
+        cfg = self.cfg.classifier
+        assert cfg.name == "LogisticRegression"
+        classifier = LogisticRegression(solver=cfg.solver,
+                                        max_iter=cfg.max_iter,
+                                        multi_class=cfg.multi_class,
+                                        random_state=cfg.random_state)
+        return classifier
 
     @staticmethod
     @njit
@@ -113,7 +103,8 @@ class Deepwalk(SklearnModel):
 
                 yield single_walk
 
-    def get_embeddings(self, norm=True):
+    @property
+    def embeddings(self, norm=True):
         if LooseVersion(gensim.__version__) <= LooseVersion("4.0.0"):
             embeddings = self.model.wv.vectors[np.fromiter(
                 map(int, self.model.wv.index2word), np.int32).argsort()]
@@ -121,7 +112,7 @@ class Deepwalk(SklearnModel):
             embeddings = self.model.wv.vectors[np.fromiter(
                 map(int, self.model.wv.index_to_key), np.int32).argsort()]
 
-        if norm:
+        if self.cfg.normalize_embedding:
             embeddings = self.normalize_embedding(embeddings)
 
         return embeddings

@@ -27,11 +27,11 @@ class ClusterGCN(Trainer):
                      adj_transform="normalize_adj",
                      attr_transform=None,
                      graph_transform=None,
-                     n_clusters=10):
+                     num_clusters=10):
 
         graph = gf.get(graph_transform)(self.graph)
         batch_adj, batch_x, cluster_member = gf.graph_partition(
-            graph, n_clusters=n_clusters, metis_partition=True)
+            graph, num_clusters=num_clusters, metis_partition=True)
 
         batch_adj = gf.get(adj_transform)(*batch_adj)
         batch_x = gf.get(attr_transform)(*batch_x)
@@ -69,7 +69,7 @@ class ClusterGCN(Trainer):
 
         batch_mask, batch_y = [], []
         batch_x, batch_adj = [], []
-        for cluster in range(self.cfg.process.n_clusters):
+        for cluster in range(self.cfg.process.num_clusters):
             nodes = cache.cluster_member[cluster]
             mask = node_mask[nodes]
             y = labels[nodes][mask]
@@ -94,7 +94,7 @@ class ClusterGCN(Trainer):
         orders_dict = {idx: order for order, idx in enumerate(index)}
         batch_mask, orders = [], []
         batch_x, batch_adj = [], []
-        for cluster in range(self.cfg.process.n_clusters):
+        for cluster in range(self.cfg.process.num_clusters):
             nodes = cache.cluster_member[cluster]
             mask = node_mask[nodes]
             batch_nodes = np.asarray(nodes)[mask]

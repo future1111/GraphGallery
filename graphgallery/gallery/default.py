@@ -13,6 +13,7 @@ def default_cfg(model):
     cfg.intx = model.intx
     cfg.floatx = model.floatx
     cfg.boolx = model.boolx
+    cfg.backend = model.backend
 
     cfg.process = gg.CfgNode()
     cfg.process.graph_transform = None

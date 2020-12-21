@@ -30,13 +30,13 @@ class LGCN(Trainer):
 
     def builder(self,
                 hids=[32],
-                n_filters=[8, 8],
+                num_filters=[8, 8],
                 acts=[None, None],
                 dropout=0.8,
                 weight_decay=5e-4,
                 lr=0.1,
                 use_bias=False,
-                K=8, exclude=["n_filters", "acts"]):
+                K=8, exclude=["num_filters", "acts"]):
 
         model = get_model("LGCN", self.backend)
         model = model(self.graph.num_node_attrs,

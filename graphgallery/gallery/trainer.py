@@ -49,28 +49,10 @@ def unravel_batch(batch):
 
 
 class Trainer(Model):
-    def __init__(self, graph, device="cpu", seed=None, name=None, **kwargs):
-        """
-        Parameters:
-        ----------
-        graph: Graph or MultiGraph.
-        device: string. optional
-            The device where the model running on.
-        seed: interger scalar. optional
-            Used in combination with `tf.random.set_seed` & `np.random.seed`
-            & `random.seed` to create a reproducible sequence of tensors
-            across multiple calls.
-        name: string. optional
-            Specified name for the model. (default: :str: `class name`)
-        kwargs: other custom keyword arguments. 
-        """
-        super().__init__(graph, device=device, seed=seed, name=name, **kwargs)
-        self.setup()
-
     def custom_setup(self):
         pass
 
-    def setup(self):
+    def setup_cfg(self):
         self.cfg = default_cfg(self)
         self.custom_setup()
 
