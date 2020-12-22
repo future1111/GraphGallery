@@ -40,7 +40,8 @@ class GAT(Trainer):
                 weight_decay=5e-4,
                 lr=0.01,
                 use_bias=True,
-                include=["num_heads"]):
+                include=["num_heads"],
+                use_tfn=True):
 
         model = get_model("GAT", self.backend)
         model = model(self.graph.num_node_attrs,
@@ -52,8 +53,8 @@ class GAT(Trainer):
                       weight_decay=weight_decay,
                       lr=lr,
                       use_bias=use_bias)
-
-        model.use_tfn()
+        if use_tfn:
+            model.use_tfn()
         return model
 
     def train_sequence(self, index):

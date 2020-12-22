@@ -47,7 +47,8 @@ class GraphSAGE(Trainer):
                 use_bias=True,
                 output_normalize=False,
                 aggregator='mean',
-                num_samples=[15, 5]):
+                num_samples=[15, 5], 
+                use_tfn=True):
 
         model = get_model("GraphSAGE", self.backend)
         model = model(self.graph.num_node_attrs,
@@ -61,7 +62,8 @@ class GraphSAGE(Trainer):
                       aggregator=aggregator,
                       output_normalize=output_normalize,
                       num_samples=num_samples)
-        model.use_tfn()
+        if use_tfn:
+            model.use_tfn()
 
         return model
 

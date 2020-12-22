@@ -36,7 +36,8 @@ class DAGNN(Trainer):
                 weight_decay=5e-3,
                 lr=0.01,
                 use_bias=False,
-                K=10):
+                K=10,
+                use_tfn=True):
 
         model = get_model("DAGNN", self.backend)
         model = model(self.graph.num_node_attrs,
@@ -48,7 +49,8 @@ class DAGNN(Trainer):
                       lr=lr,
                       use_bias=use_bias,
                       K=K)
-        model.use_tfn()
+        if use_tfn:
+            model.use_tfn()
 
         return model
 

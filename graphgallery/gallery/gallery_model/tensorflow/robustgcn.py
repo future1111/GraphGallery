@@ -39,7 +39,9 @@ class RobustGCN(Trainer):
                 lr=0.01,
                 kl=5e-4,
                 gamma=1.,
-                use_bias=False):
+                use_bias=False,
+                use_tfn=True):
+        
         model = get_model("RobustGCN", self.backend)
         model = model(self.graph.num_node_attrs,
                       self.graph.num_node_classes,
@@ -51,7 +53,9 @@ class RobustGCN(Trainer):
                       gamma=gamma,
                       lr=lr,
                       use_bias=use_bias)
-        model.use_tfn()
+        
+        if use_tfn:
+            model.use_tfn()
 
         return model
 

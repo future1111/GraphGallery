@@ -27,7 +27,9 @@ class GCNA(GCN):
                 dropout=0.5,
                 weight_decay=5e-4,
                 lr=0.01,
-                use_bias=False):
+                use_bias=False, 
+                use_tfn=True):
+        
         model = get_model("GCNA", self.backend)
         model = model(self.graph.num_node_attrs,
                       self.graph.num_node_classes,
@@ -37,6 +39,7 @@ class GCNA(GCN):
                       weight_decay=weight_decay,
                       lr=lr,
                       use_bias=use_bias)
-        model.use_tfn()
+        if use_tfn:
+            model.use_tfn()
 
         return model

@@ -37,7 +37,8 @@ class DenseGCN(Trainer):
                 dropout=0.5,
                 weight_decay=5e-4,
                 lr=0.01,
-                use_bias=False):
+                use_bias=False,
+                use_tfn=True):
 
         model = get_model("DenseGCN", self.backend)
         model = model(self.graph.num_node_attrs,
@@ -48,7 +49,8 @@ class DenseGCN(Trainer):
                       weight_decay=weight_decay,
                       lr=lr,
                       use_bias=use_bias)
-        model.use_tfn()
+        if use_tfn:
+            model.use_tfn()
 
         return model
 

@@ -49,7 +49,9 @@ class SGC(Trainer):
                 dropout=0.5,
                 weight_decay=5e-5,
                 lr=0.2,
-                use_bias=True):
+                use_bias=True, 
+                use_tfn=True):
+        
         model = get_model("SGC", self.backend)
         model = model(self.graph.num_node_attrs,
                       self.graph.num_node_classes,
@@ -59,7 +61,9 @@ class SGC(Trainer):
                       weight_decay=weight_decay,
                       lr=lr,
                       use_bias=use_bias)
-        model.use_tfn()
+        
+        if use_tfn:
+            model.use_tfn()
 
         return model
 

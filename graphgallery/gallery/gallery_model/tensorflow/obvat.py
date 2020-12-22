@@ -54,7 +54,8 @@ class OBVAT(Trainer):
                 lr=0.01,
                 use_bias=False,
                 p1=1.4,
-                p2=0.7):
+                p2=0.7, 
+                use_tfn=True):
 
         x = Input(batch_shape=[None, self.graph.num_node_attrs],
                   dtype=self.floatx,
@@ -93,6 +94,9 @@ class OBVAT(Trainer):
         model.add_loss(p1 * vat_loss + p2 * entropy_loss)
 
         self.adv_optimizer = Adam(lr=lr / 10.)
+        
+        if use_tfn:
+            model.use_tfn()
         return model
 
     def virtual_adversarial_loss(self, x, adj, logit):

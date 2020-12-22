@@ -36,7 +36,7 @@ class LGCN(Trainer):
                 weight_decay=5e-4,
                 lr=0.1,
                 use_bias=False,
-                K=8, exclude=["num_filters", "acts"]):
+                K=8, exclude=["num_filters", "acts"], use_tfn=True):
 
         model = get_model("LGCN", self.backend)
         model = model(self.graph.num_node_attrs,
@@ -48,7 +48,8 @@ class LGCN(Trainer):
                       lr=lr,
                       use_bias=use_bias,
                       K=K)
-        model.use_tfn()
+        if use_tfn:
+            model.use_tfn()
 
         return model
 

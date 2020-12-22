@@ -34,7 +34,8 @@ class SimplifiedOBVAT(OBVAT):
                 use_bias=False,
                 p1=1.4,
                 p2=0.7,
-                epsilon=0.01):
+                epsilon=0.01, 
+                use_tfn=True):
 
         x = Input(batch_shape=[None, self.graph.num_node_attrs],
                   dtype=self.floatx,
@@ -70,7 +71,9 @@ class SimplifiedOBVAT(OBVAT):
         entropy_loss = entropy_y_x(h)
         vat_loss = self.virtual_adversarial_loss(x, adj, h, epsilon)
         model.add_loss(p1 * vat_loss + p2 * entropy_loss)
-
+        
+        if use_tfn:
+            model.use_tfn()
         return model
 
     def train_step(self, sequence):

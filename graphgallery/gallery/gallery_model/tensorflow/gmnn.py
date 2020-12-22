@@ -46,7 +46,8 @@ class GMNN(Trainer):
                 dropout=0.6,
                 weight_decay=5e-4,
                 lr=0.05,
-                use_bias=False):
+                use_bias=False, 
+                use_tfn=True):
 
         x_p = Input(batch_shape=[None, self.graph.num_node_classes],
                     dtype=self.floatx,
@@ -88,8 +89,9 @@ class GMNN(Trainer):
             'GraphConvolution': GraphConvolution,
             "TFKeras": TFKeras,
         }
-        model_p.use_tfn()
-        model_q.use_tfn()
+        if use_tfn:
+            model_p.use_tfn()
+            model_q.use_tfn()
 
         self.model_p, self.model_q = model_p, model_q
         return model_q

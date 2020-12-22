@@ -50,7 +50,8 @@ class ClusterGCN(Trainer):
                 dropout=0.5,
                 weight_decay=0.,
                 lr=0.01,
-                use_bias=False):
+                use_bias=False,
+                use_tfn=True):
 
         model = get_model("GCN", self.backend)
         model = model(self.graph.num_node_attrs,
@@ -63,7 +64,7 @@ class ClusterGCN(Trainer):
                       use_bias=use_bias,
                       experimental_run_tf_function=False)
 
-        if LooseVersion(tf.__version__) < LooseVersion("2.2.0"):
+        if LooseVersion(tf.__version__) < LooseVersion("2.2.0") and use_tfn:
             model.use_tfn()
 
         return model
