@@ -6,18 +6,15 @@ from graphgallery.nn.models import get_model
 
 
 @PyTorch.register()
-class GAT(Trainer):
+class DAGNN(Trainer):
     """
-        Implementation of Graph Attention Networks (GAT).
-        `Graph Attention Networks <https://arxiv.org/abs/1710.10903>`
-        Tensorflow 1.x implementation: <https://github.com/PetarV-/GAT>
-        Pytorch implementation: <https://github.com/Diego999/pyGAT>
-        Keras implementation: <https://github.com/danielegrattarola/keras-gat>
-
+        Implementation of Deep Adaptive Graph Neural Network (DAGNN). 
+        `Towards Deeper Graph Neural Networks <https://arxiv.org/abs/2007.09296>`
+        Pytorch implementation: <https://github.com/mengliu1998/DeeperGNN>
     """
 
     def process_step(self,
-                     adj_transform="add_selfloops",
+                     adj_transform="normalize_adj",
                      attr_transform=None,
                      graph_transform=None):
 
@@ -31,20 +28,18 @@ class GAT(Trainer):
         self.register_cache(X=X, A=A)
 
     def builder(self,
-                hids=[8],
-                num_heads=[8],
-                acts=['elu'],
-                dropout=0.6,
-                weight_decay=5e-4,
+                hids=[64],
+                acts=['relu'],
+                dropout=0.5,
+                weight_decay=5e-3,
                 lr=0.01,
-                use_bias=True,
-                include=["num_heads"]):
+                use_bias=False,
+                K=10):
 
-        model = get_model("GAT", self.backend)
+        model = get_model("DAGNN", self.backend)
         model = model(self.graph.num_node_attrs,
                       self.graph.num_node_classes,
                       hids=hids,
-                      num_heads=num_heads,
                       acts=acts,
                       dropout=dropout,
                       weight_decay=weight_decay,
@@ -56,8 +51,8 @@ class GAT(Trainer):
     def train_sequence(self, index):
 
         labels = self.graph.node_label[index]
-        sequence = FullBatchSequence([self.cache.X, self.cache.A],
-                                     labels,
+        sequence = FullBatchSequence(x=[self.cache.X, self.cache.A],
+                                     y=labels,
                                      out_weight=index,
                                      device=self.device)
         return sequence

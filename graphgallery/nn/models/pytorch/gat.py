@@ -1,7 +1,6 @@
 import torch
 import torch.nn.functional as F
-
-from torch.nn import Module, ModuleList, Dropout
+import torch.nn as nn
 from torch import optim
 
 from graphgallery.nn.models import TorchKeras
@@ -23,7 +22,7 @@ class GAT(TorchKeras):
 
         super().__init__()
 
-        layers = ModuleList()
+        layers = nn.ModuleList()
         paras = []
 
         inc = in_channels
@@ -51,7 +50,7 @@ class GAT(TorchKeras):
         paras.append(dict(params=layer.parameters(), weight_decay=0.))
 
         self.layers = layers
-        self.dropout = Dropout(dropout)
+        self.dropout = nn.Dropout(dropout)
         self.compile(loss=torch.nn.CrossEntropyLoss(),
                      optimizer=optim.Adam(paras, lr=lr),
                      metrics=[Accuracy()])

@@ -1,6 +1,4 @@
 import numpy as np
-import tensorflow as tf
-
 from graphgallery.sequence import MiniBatchSequence
 from graphgallery.gallery import Trainer
 from graphgallery.nn.models import get_model

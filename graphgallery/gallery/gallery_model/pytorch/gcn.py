@@ -1,5 +1,3 @@
-import tensorflow as tf
-
 from graphgallery.sequence import FullBatchSequence
 from graphgallery import functional as gf
 from graphgallery.gallery import PyTorch

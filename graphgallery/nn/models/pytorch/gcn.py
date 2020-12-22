@@ -1,7 +1,6 @@
 import torch
 import torch.nn.functional as F
-
-from torch.nn import Module, ModuleList, Dropout
+import torch.nn as nn
 from torch import optim
 
 from graphgallery.nn.models import TorchKeras
@@ -22,7 +21,7 @@ class GCN(TorchKeras):
 
         super().__init__()
 
-        self.layers = ModuleList()
+        layers = nn.ModuleList()
         paras = []
 
         # use ModuleList to create layers with different size
@@ -32,18 +31,19 @@ class GCN(TorchKeras):
                                      hid,
                                      activation=act,
                                      use_bias=use_bias)
-            self.layers.append(layer)
+            layers.append(layer)
             paras.append(dict(params=layer.parameters(), weight_decay=weight_decay))
             inc = hid
 
         layer = GraphConvolution(inc, out_channels, use_bias=use_bias)
-        self.layers.append(layer)
-        # do not use weight_decay in the final layer
         paras.append(dict(params=layer.parameters(), weight_decay=0.))
+        layers.append(layer)
+        self.layers = layers
+        # do not use weight_decay in the final layer
         self.compile(loss=torch.nn.CrossEntropyLoss(),
                      optimizer=optim.Adam(paras, lr=lr),
                      metrics=[Accuracy()])
-        self.dropout = Dropout(dropout)
+        self.dropout = nn.Dropout(dropout)
 
     def forward(self, x, adj):
 
