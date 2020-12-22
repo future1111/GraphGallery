@@ -7,15 +7,6 @@ import importlib
 import graphgallery as gg
 
 
-def _gen_missing_model(model, backend):
-    def _missing_model(*args, **kwargs):
-        raise ImportError(f"model {model} is not supported by '{backend}'."
-                          " You can switch to other backends by setting"
-                          " the 'graphgallery.backend' environment.")
-
-    return _missing_model
-
-
 def get_model(model: str, backend_name=None):
     backend = gg.backend(backend_name)
     mod = importlib.import_module(f".{backend.abbr}", __name__)
